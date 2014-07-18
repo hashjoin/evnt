@@ -1,0 +1,10 @@
+
+Connected to: Oracle8i Enterprise Edition Release 8.1.7.4.0 - Production
+With the Partitioning option
+JServer Release 8.1.7.4.0 - Production
+Export done in US7ASCII character set and WE8ISO8859P1 NCHAR character set
+server uses WE8ISO8859P1 character set (possible charset conversion)
+
+About to export specified tables via Conventional Path ...
+. . exporting table                 WEB_ATTRIBUTES         23 rows exported
+Export terminated successfully without warnings.

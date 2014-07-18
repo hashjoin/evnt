@@ -1,0 +1,38 @@
+mondb1,"EVNT Management server DO NOT REMOVE!",EVNT,"EVNT Management server DATABASE DO NOT REMOVE!",bgpurge,justagate,EVNT1
+mondb1,"EVNT Management server DO NOT REMOVE!",EVNT,"EVNT Management server DATABASE DO NOT REMOVE!",mon,justagate,EVNT1
+dbscan.vip.ed.dc1,"EDARPR Cluster",EDARPR,"EDARPR Service",mon,justagate,EDARPR
+db01.ed.dc1,"EDARPR node 1",EDARPR1,"EDARPR1 TNS",mon,justagate,EDARPR1
+db02.ed.dc1,"EDARPR node 2",EDARPR2,"EDARPR2 TNS",mon,justagate,EDARPR2
+db03.ed.dc1,"EDARPR node 3",EDARPR3,"EDARPR3 TNS",mon,justagate,EDARPR3
+db04.ed.dc1,"EDARPR node 4",EDARPR4,"EDARPR4 TNS",mon,justagate,EDARPR4
+proddb03-vip.dc1,"SORA Cluster",LSORA,LSORA,mon,justagate,LSORA
+proddb01.dc1,proddb01,SORA1,SORA1,mon,justagate,SORA1
+proddb02.dc1,proddb02,SORA2,SORA2,mon,justagate,SORA2
+proddb03.dc1,proddb03,SORA3,SORA3,mon,justagate,SORA3
+proddb04.dc1,proddb04,SORA4,SORA4,mon,justagate,SORA4
+proddb05.dc1,proddb05,SORA5,SORA5,mon,justagate,SORA5
+proddb06.dc1,proddb06,SORA6,SORA6,mon,justagate,SORA6
+shareplex1.dc1,"Shareplex",REPDB1,REPDB1,mon,justagate,REPDB1
+shareplex2.dc1,"Shareplex",REPDB2,REPDB1,mon,justagate,REPDB2
+3par-t800.dc1,"3PAR Storage System"
+dagdb01.dc1,"SNAP",SORA,SNAP,mon,justagate,SNAP
+prodmiscdbscan.dc1,"MISCDB Cluster",MISC,MISC,mon,justagate,MISC
+prodmiscdb1.dc1,prodmiscdb1,MISC1,MISC1,mon,justagate,MISC1
+prodmiscdb2.dc1,prodmiscdb2,MISC2,MISC2,mon,justagate,MISC2
+stagedb01.dc2,stagedb01,STAGEDB,STAGEDB,mon,justagate,STAGEDB
+int-mysql1.np.dc1,"MySQL Slave int-mysql1.np.dc1"
+streamdb1.dc1,"Streams 11g Box",STRMDB11,STRMDB11,mon,justagate,STRMDB11
+dc1-devdb01.dc,"DEV SORA Win Box",SORA,SORA,mon,justagate,DEVDB01
+dbdev10g.dc1,"DEV SORA Linux Box",SORA,SORA,mon,justagate,DEVDB10G
+ltmoradbscan.qa.dc1,"LTMORA QA Cluster",LTMORA,LTMORA,mon,justagate,LTMORA
+ltmoradb1.qa.dc1,ltmoradb1.qa.dc1,LTMORA1,LTMORA1,mon,justagate,LTMORA1
+ltmoradb2.qa.dc1,ltmoradb2.qa.dc1,LTMORA2,LTMORA2,mon,justagate,LTMORA2
+prodmoradbscan.dc1,"MORA PROD Cluster",MORA,MORA,mon,justagate,MORA
+prodmoradb1.dc1,prodmoradb1.dc1,MORA1,MORA1,mon,justagate,MORA1
+prodmoradb2.dc1,prodmoradb2.dc1,MORA2,MORA2,mon,justagate,MORA2
+prodmoradb3.dc1,prodmoradb3.dc1,MORA3,MORA3,mon,justagate,MORA3
+prodmoradb4.dc1,prodmoradb4.dc1,MORA4,MORA4,mon,justagate,MORA4
+prodmoradb5.dc1,prodmoradb5.dc1,MORA5,MORA5,mon,justagate,MORA5
+prodmoradb6.dc1,prodmoradb6.dc1,MORA6,MORA6,mon,justagate,MORA6
+testdb1.dc1,testdb1.dc1,SORA1,SORA1,mon,justagate,TSTSORA1
+testdb2.dc1,testdb2.dc1,SORA2,SORA2,mon,justagate,TSTSORA2

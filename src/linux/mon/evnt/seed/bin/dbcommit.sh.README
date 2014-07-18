@@ -1,0 +1,126 @@
+To save attribute file to a remote repository / reporting server - create the user and the following table there:
+
+create tablespace STATDB_DATA
+datafile '+SORA_DATA(DATAFILE)' size 1g autoextend on next 100m maxsize unlimited,
+         '+SORA_DATA(DATAFILE)' size 1g autoextend on next 100m maxsize unlimited,
+         '+SORA_DATA(DATAFILE)' size 1g autoextend on next 100m maxsize unlimited,
+         '+SORA_DATA(DATAFILE)' size 1g autoextend on next 100m maxsize unlimited
+EXTENT MANAGEMENT LOCAL
+SEGMENT SPACE MANAGEMENT AUTO;
+
+create user statdb identified by st14datp
+default tablespace STATDB_DATA
+temporary tablespace TEMP;
+
+grant connect, resource to statdb;
+revoke unlimited tablespace from statdb;
+alter user statdb quota unlimited on STATDB_DATA;
+
+alter session set current_schema=statdb;
+
+drop table crl_monitor_all;
+create table crl_monitor_all (
+	snap_id			number not null
+,	db_name			varchar2(9) not null
+,	inst_id			number not null
+,	snap_time		TIMESTAMP(6) not null
+,	user_commits		number
+,	user_rollbacks		number
+,	logons_cumulative	number
+,	start_time		TIMESTAMP(6) not null
+,	end_time		TIMESTAMP(6) not null );
+
+alter table crl_monitor_all add
+constraint CMA_PK PRIMARY KEY (snap_id,db_name,inst_id);
+
+create index cma_indx01 on crl_monitor_all(db_name,snap_time);
+
+
+Then supply REPDB_CONNECT parameter in the following format: statdb/st14datp@REPDB2
+and the event will automatically load the attribute files there using SQLLDR
+You'll then be able to select the data using the following query (sample):
+
+
+col SNAP_TIME format a28
+col START_TIME format a28
+col END_TIME format a28
+set pages 1000
+break on SNAP_ID skip 1
+select * From crl_monitor_all order by db_name,snap_id;
+
+
+   SNAP_ID DB_NAME      INST_ID SNAP_TIME                    USER_COMMITS USER_ROLLBACKS LOGONS_CUMULATIVE START_TIME                   END_TIME
+---------- --------- ---------- ---------------------------- ------------ -------------- ----------------- ---------------------------- ----------------------------
+       830 LSORA              2 21-MAR-14 04.43.07.000000 PM         3448             10                60 21-MAR-14 04.40.56.000000 PM 21-MAR-14 04.43.07.000000 PM
+           LSORA              3 21-MAR-14 04.43.07.000000 PM         8779             16                60 21-MAR-14 04.40.56.000000 PM 21-MAR-14 04.43.07.000000 PM
+           LSORA              4 21-MAR-14 04.43.07.000000 PM         5281              5                48 21-MAR-14 04.40.56.000000 PM 21-MAR-14 04.43.07.000000 PM
+           LSORA              5 21-MAR-14 04.43.07.000000 PM        10084             12                57 21-MAR-14 04.40.56.000000 PM 21-MAR-14 04.43.07.000000 PM
+           LSORA              6 21-MAR-14 04.43.07.000000 PM        10939             18                81 21-MAR-14 04.40.56.000000 PM 21-MAR-14 04.43.07.000000 PM
+           LSORA              1 21-MAR-14 04.43.07.000000 PM         3865             11                53 21-MAR-14 04.40.56.000000 PM 21-MAR-14 04.43.07.000000 PM
+
+       831 LSORA              2 21-MAR-14 04.46.34.000000 PM         5447             13               300 21-MAR-14 04.43.07.000000 PM 21-MAR-14 04.46.34.000000 PM
+           LSORA              3 21-MAR-14 04.46.34.000000 PM        26650             39               343 21-MAR-14 04.43.07.000000 PM 21-MAR-14 04.46.34.000000 PM
+           LSORA              4 21-MAR-14 04.46.34.000000 PM         6510             24               299 21-MAR-14 04.43.07.000000 PM 21-MAR-14 04.46.34.000000 PM
+           LSORA              5 21-MAR-14 04.46.34.000000 PM        16755             21               308 21-MAR-14 04.43.07.000000 PM 21-MAR-14 04.46.34.000000 PM
+           LSORA              6 21-MAR-14 04.46.34.000000 PM        19550             24               349 21-MAR-14 04.43.07.000000 PM 21-MAR-14 04.46.34.000000 PM
+           LSORA              1 21-MAR-14 04.46.34.000000 PM         4964             18               304 21-MAR-14 04.43.07.000000 PM 21-MAR-14 04.46.34.000000 PM
+
+       832 LSORA              5 21-MAR-14 04.49.59.000000 PM        15596            100               311 21-MAR-14 04.46.34.000000 PM 21-MAR-14 04.49.59.000000 PM
+           LSORA              6 21-MAR-14 04.49.59.000000 PM        18044            142               408 21-MAR-14 04.46.34.000000 PM 21-MAR-14 04.49.59.000000 PM
+           LSORA              4 21-MAR-14 04.49.59.000000 PM         6327             46               313 21-MAR-14 04.46.34.000000 PM 21-MAR-14 04.49.59.000000 PM
+           LSORA              3 21-MAR-14 04.49.59.000000 PM        12053             98               319 21-MAR-14 04.46.34.000000 PM 21-MAR-14 04.49.59.000000 PM
+           LSORA              2 21-MAR-14 04.49.59.000000 PM         5604             74               317 21-MAR-14 04.46.34.000000 PM 21-MAR-14 04.49.59.000000 PM
+           LSORA              1 21-MAR-14 04.49.59.000000 PM         4705             81               317 21-MAR-14 04.46.34.000000 PM 21-MAR-14 04.49.59.000000 PM
+
+       833 LSORA              1 21-MAR-14 04.53.22.000000 PM         4269             24                87 21-MAR-14 04.49.59.000000 PM 21-MAR-14 04.53.22.000000 PM
+           LSORA              2 21-MAR-14 04.53.22.000000 PM         5826             28                79 21-MAR-14 04.49.59.000000 PM 21-MAR-14 04.53.22.000000 PM
+           LSORA              3 21-MAR-14 04.53.22.000000 PM        13509             54                81 21-MAR-14 04.49.59.000000 PM 21-MAR-14 04.53.22.000000 PM
+           LSORA              4 21-MAR-14 04.53.22.000000 PM         7142             22                73 21-MAR-14 04.49.59.000000 PM 21-MAR-14 04.53.22.000000 PM
+           LSORA              5 21-MAR-14 04.53.22.000000 PM        18027             37                85 21-MAR-14 04.49.59.000000 PM 21-MAR-14 04.53.22.000000 PM
+           LSORA              6 21-MAR-14 04.53.22.000000 PM        18190             39               194 21-MAR-14 04.49.59.000000 PM 21-MAR-14 04.53.22.000000 PM
+
+       834 LSORA              1 21-MAR-14 04.56.41.000000 PM         4516             34               300 21-MAR-14 04.53.22.000000 PM 21-MAR-14 04.56.41.000000 PM
+           LSORA              2 21-MAR-14 04.56.41.000000 PM         6089             68               304 21-MAR-14 04.53.22.000000 PM 21-MAR-14 04.56.41.000000 PM
+           LSORA              3 21-MAR-14 04.56.41.000000 PM        13686             56               304 21-MAR-14 04.53.22.000000 PM 21-MAR-14 04.56.41.000000 PM
+           LSORA              4 21-MAR-14 04.56.41.000000 PM         6408             46               301 21-MAR-14 04.53.22.000000 PM 21-MAR-14 04.56.41.000000 PM
+           LSORA              6 21-MAR-14 04.56.41.000000 PM        17800             45               354 21-MAR-14 04.53.22.000000 PM 21-MAR-14 04.56.41.000000 PM
+           LSORA              5 21-MAR-14 04.56.41.000000 PM        16340             62               302 21-MAR-14 04.53.22.000000 PM 21-MAR-14 04.56.41.000000 PM
+
+       835 LSORA              1 21-MAR-14 05.00.09.000000 PM         4827             19               326 21-MAR-14 04.56.41.000000 PM 21-MAR-14 05.00.09.000000 PM
+           LSORA              2 21-MAR-14 05.00.09.000000 PM         4368             21               317 21-MAR-14 04.56.41.000000 PM 21-MAR-14 05.00.09.000000 PM
+           LSORA              3 21-MAR-14 05.00.09.000000 PM        14115             24               329 21-MAR-14 04.56.41.000000 PM 21-MAR-14 05.00.09.000000 PM
+           LSORA              4 21-MAR-14 05.00.09.000000 PM         6737             17               307 21-MAR-14 04.56.41.000000 PM 21-MAR-14 05.00.09.000000 PM
+           LSORA              5 21-MAR-14 05.00.09.000000 PM        16872             15               310 21-MAR-14 04.56.41.000000 PM 21-MAR-14 05.00.09.000000 PM
+           LSORA              6 21-MAR-14 05.00.09.000000 PM        18922             14               398 21-MAR-14 04.56.41.000000 PM 21-MAR-14 05.00.09.000000 PM
+
+       836 LSORA              5 21-MAR-14 05.03.26.000000 PM        18047             13                87 21-MAR-14 05.00.09.000000 PM 21-MAR-14 05.03.26.000000 PM
+           LSORA              4 21-MAR-14 05.03.26.000000 PM         6371             19                96 21-MAR-14 05.00.09.000000 PM 21-MAR-14 05.03.26.000000 PM
+           LSORA              3 21-MAR-14 05.03.26.000000 PM        12929             25               108 21-MAR-14 05.00.09.000000 PM 21-MAR-14 05.03.26.000000 PM
+           LSORA              2 21-MAR-14 05.03.26.000000 PM         6742             23                97 21-MAR-14 05.00.09.000000 PM 21-MAR-14 05.03.26.000000 PM
+           LSORA              1 21-MAR-14 05.03.26.000000 PM         4437             23                98 21-MAR-14 05.00.09.000000 PM 21-MAR-14 05.03.26.000000 PM
+           LSORA              6 21-MAR-14 05.03.26.000000 PM        15853             28               142 21-MAR-14 05.00.09.000000 PM 21-MAR-14 05.03.26.000000 PM
+
+       837 LSORA              5 21-MAR-14 05.06.47.000000 PM        20385            184               304 21-MAR-14 05.03.26.000000 PM 21-MAR-14 05.06.47.000000 PM
+           LSORA              6 21-MAR-14 05.06.47.000000 PM        23556            181               353 21-MAR-14 05.03.26.000000 PM 21-MAR-14 05.06.47.000000 PM
+           LSORA              4 21-MAR-14 05.06.47.000000 PM        10937            165               299 21-MAR-14 05.03.26.000000 PM 21-MAR-14 05.06.47.000000 PM
+           LSORA              3 21-MAR-14 05.06.47.000000 PM        67206            188               294 21-MAR-14 05.03.26.000000 PM 21-MAR-14 05.06.47.000000 PM
+           LSORA              2 21-MAR-14 05.06.47.000000 PM         9449            162               304 21-MAR-14 05.03.26.000000 PM 21-MAR-14 05.06.47.000000 PM
+           LSORA              1 21-MAR-14 05.06.47.000000 PM         9067            148               305 21-MAR-14 05.03.26.000000 PM 21-MAR-14 05.06.47.000000 PM
+
+       838 LSORA              6 21-MAR-14 05.10.12.000000 PM        35938           1918               362 21-MAR-14 05.06.47.000000 PM 21-MAR-14 05.10.12.000000 PM
+           LSORA              5 21-MAR-14 05.10.12.000000 PM        32895           1898               340 21-MAR-14 05.06.47.000000 PM 21-MAR-14 05.10.12.000000 PM
+           LSORA              4 21-MAR-14 05.10.12.000000 PM        21741           1772               318 21-MAR-14 05.06.47.000000 PM 21-MAR-14 05.10.12.000000 PM
+           LSORA              3 21-MAR-14 05.10.12.000000 PM       179681           2335               317 21-MAR-14 05.06.47.000000 PM 21-MAR-14 05.10.12.000000 PM
+           LSORA              2 21-MAR-14 05.10.12.000000 PM        22227           1834               312 21-MAR-14 05.06.47.000000 PM 21-MAR-14 05.10.12.000000 PM
+           LSORA              1 21-MAR-14 05.10.12.000000 PM        21224           1834               313 21-MAR-14 05.06.47.000000 PM 21-MAR-14 05.10.12.000000 PM
+
+       839 LSORA              1 21-MAR-14 05.13.35.000000 PM        16910           1048                91 21-MAR-14 05.10.12.000000 PM 21-MAR-14 05.13.35.000000 PM
+           LSORA              2 21-MAR-14 05.13.35.000000 PM        17477           1002                97 21-MAR-14 05.10.12.000000 PM 21-MAR-14 05.13.35.000000 PM
+           LSORA              3 21-MAR-14 05.13.35.000000 PM        99498           1163               103 21-MAR-14 05.10.12.000000 PM 21-MAR-14 05.13.35.000000 PM
+           LSORA              4 21-MAR-14 05.13.35.000000 PM        18243           1019                80 21-MAR-14 05.10.12.000000 PM 21-MAR-14 05.13.35.000000 PM
+           LSORA              5 21-MAR-14 05.13.35.000000 PM        27258           1032                86 21-MAR-14 05.10.12.000000 PM 21-MAR-14 05.13.35.000000 PM
+           LSORA              6 21-MAR-14 05.13.35.000000 PM        29529           1112               138 21-MAR-14 05.10.12.000000 PM 21-MAR-14 05.13.35.000000 PM
+
+
+60 rows selected.
+

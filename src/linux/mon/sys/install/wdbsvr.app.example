@@ -1,0 +1,46 @@
+[DAD_EVNT]
+connect_string   =  <mgm_tns_alias>
+;password   =
+;username   =
+;default_page   =
+;document_table   =
+;document_path   =
+;document_proc   =
+;upload_as_long_raw   =
+;upload_as_blob   =
+name_prefix   =
+;always_describe   =
+;after_proc   =
+;before_proc   =
+reuse   =  Yes
+connmax   = 10
+;pathalias   =
+;pathaliasproc   =
+enablesso   =  No
+;sncookiename   =
+stateful   =  No
+;custom_auth   =
+;
+[DAD_EVNTT]
+connect_string   =  <mgm_tns_alias>
+;password   =
+;username   =
+;default_page   =
+;document_table   =
+;document_path   =
+;document_proc   =
+;upload_as_long_raw   =
+;upload_as_blob   =
+name_prefix   =
+;always_describe   =
+after_proc   = glob_web_pkg.trace_off
+before_proc   = glob_web_pkg.trace_on
+reuse   =  Yes
+connmax   = 10
+;pathalias   =
+;pathaliasproc   =
+enablesso   =  No
+;sncookiename   =
+stateful   =  No
+;custom_auth   =
+;

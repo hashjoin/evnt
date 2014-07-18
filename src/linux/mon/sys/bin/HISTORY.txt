@@ -1,0 +1,6 @@
+DATE		WHO		VER	FILE		DESC
+--------------	--------------	-------	---------------	--------------------------------
+11-MAR-2004	VMOGILEV	1.2	clnsid.sh	removed UPPER on s_name
+				na	sidcln.sql	- // -
+
+
