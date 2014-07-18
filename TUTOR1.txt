@@ -1,0 +1,441 @@
+# ------------------------------------------------------------------------------
+#         Copyright (c) 2009 HASHJOIN Corporation All rights reserved.
+# ------------------------------------------------------------------------------
+# FILE:         TUTOR1.txt
+# VERSION:      v3.5.01
+# LOCATION:     http://kb.dbatoolz.com/tp/1155.download__evnt_-_event_monitoring_system.html
+# ABOUT:        This is the first installment of tutorials for (EVNT) EVNT - Event Monitoring System 
+#               - Event Monitoring System v3.5.  This is not an installation 
+#               manual please refer to:
+#                  http://kb.dbatoolz.com/tp/1155.download__evnt_-_event_monitoring_system.html
+# CONTACT:      http://kb.dbatoolz.com/tp/1458.evnt_support.html
+# ------------------------------------------------------------------------------
+
+
+-----------------------------------------------
+                  I N D E X
+-----------------------------------------------
+ 1. INSTALLING EVNT
+ 2. LOGIN TO MANAGEMENT WEBSITE
+ 3. CREATE "Tablespace Usage" EVENT ASSIGNMENT
+ 4. CONTROLLING BACKGROUND PROCESSES
+ 5. CHECKING EVENT ASSIGNMENT STATUS
+ 6. EVENT ASSIGNMENT TRIGGER NAVIGATOR
+ 7. EVENT TRIGGERS ANALYSIS TOOLS
+ 8. REPORTS
+-----------------------------------------------
+
+
+
+1. INSTALLING EVNT
+
+thost.TUTOR-> pwd
+/u01/app/oracle/admin/scripts
+thost.TUTOR-> ls -l EVNT_dreq.tar
+-rw-r--r--   1 oracle   oinstall 2027520 Jul 15 15:10 EVNT_dreq.tar
+thost.TUTOR-> tar xvf EVNT_dreq.tar
+x mon, 0 bytes, 0 tape blocks
+x mon/sys, 0 bytes, 0 tape blocks
+x mon/sys/bin, 0 bytes, 0 tape blocks
+x mon/sys/bin/evntproc.sh, 9294 bytes, 19 tape blocks
+.
+.
+.
+x mon/shared/syslog, 0 bytes, 0 tape blocks
+x mon/TNSADMIN, 0 bytes, 0 tape blocks
+x mon/TNSADMIN/tnsnames.ora, 364 bytes, 1 tape blocks
+x mon/TNSADMIN/sqlnet.ora, 58 bytes, 1 tape blocks
+thost.TUTOR->
+
+
+thost.TUTOR-> cd mon
+thost.TUTOR-> pwd
+/u01/app/oracle/admin/scripts/mon
+thost.TUTOR-> ls -l
+total 12
+-rw-r--r--   1 oracle   oinstall    1232 Jun 11 13:18 MON.env
+drwxr-xr-x   2 oracle   oinstall     512 Jun 11 13:30 TNSADMIN
+drwxr-xr-x   6 oracle   oinstall     512 Oct  2  2002 evnt
+drwxr-xr-x   7 oracle   oinstall     512 Aug 13  2002 shared
+drwxr-xr-x   6 oracle   oinstall     512 Mar 24 12:16 sys
+thost.TUTOR->vi MON.env
+SETUP THE FOLLOWING
+-------------------
+MON_TOP=/u01/app/oracle/admin/scripts/mon; export MON_TOP
+ping_cmd="/usr/sbin/ping"; export ping_cmd
+replyto=oracle_dba@yourcompany.com; export replyto
+sysadmin=oracle_dba@yourcompany.com; export sysadmin
+global_mail_prefix="ALC_"; export global_mail_prefix
+
+
+thost.TUTOR-> . MON.env
+
+
+thost.TUTOR-> cd $TNS_ADMIN
+thost.TUTOR-> vi tnsnames.ora
+SETUP THE FOLLOWING TNS ALIAS (this has to match your LISTENER.ORA)
+----------------------
+TUTOR =
+  (DESCRIPTION =
+    (ADDRESS_LIST =
+      (ADDRESS = (PROTOCOL = TCP)(HOST = thost)(PORT = 1521))
+    )
+    (CONNECT_DATA =
+      (SERVICE_NAME = TUTOR.dbatoolz.com)
+    )
+  )
+
+
+thost.TUTOR-> install.sh
+
+Provide the following information about the
+database you designated to use as repository:
+
+        Enter TNS alias: tutor
+        Enter sys password: install
+        Enter tablespace: tools
+        Do you want to Install or [D]drop repository [Install]:
+vinit:  start ...
+validating supplied parameters ...
+validating database parameters ...
+vinit:  end ...
+irep:   start ...
+installing repository ...
+irep:   end ...
+ireg:   start ...
+parsing repository hostname ...
+        HOSTNAME=thost
+registering repository host/sid ...
+registering installed events ...
+installing char based interface ...
+uploading seeded data ...
+ireg:   end ...
+
+        INSTALL IS COMPLETE
+        --------------------
+        What's next:
+           o configure hosts/sids that will be monitored by EVNT
+           o make sure to change EVNT account's password
+           o startup EVNT processes issue:
+
+                % cd /u01/app/oracle/admin/scripts/mon/sys/bin
+                % startup.sh local bgproc/justagate@tutor
+
+2. LOGIN TO MANAGEMENT WEBSITE
+
+http://thost.dbatoolz.com:7777/pls/EVNT/web_nav_pkg.evnt
+        username:       webproc
+        password:       welcome
+
+"Event Module: At A Glance" screen should be displayed
+
+
+
+3. CREATE "Tablespace Usage" EVENT ASSIGNMENT
+
+Click on "Assigments" on the NAV bar
+
+Table with all available hosts should be displayed.  These hosts are added using 
+"$SYS_TOP/bin/addsid.sh" script or if host does not have a SID using 
+"$SYS_TOP/bin/trgint.sh" script with "$SYS_TOP/bin/SERVER.dat" datafile see FAQ 
+section [3.4 HOW TO REGISTER STAND ALONE HOST(S)?] in the following document: 
+   http://kb.dbatoolz.com/ex/uploads/4389.EVNT.txt 
+
+Click "Create" button next to any host
+
+Enter/Select the following:
+
+Sid:            <pick_your_SID>
+Click "Next"
+
+Sid Cred.:      mon@<your_sid>
+Click "Next"
+
+Event:          TABSP_USAGE - tabsppct.sh (Tablespace Usage)
+Click "Next"
+
+Threshold:      TBSP_80PCT (tablespace usage > 80%)
+Click "Next"
+
+Page List:      EMAIL
+Click "Next"
+
+Interval(MIN):          30              (run event every 30 minutes)
+Keep History(DAY):      -1              (keep history indefinitely)
+Status:                 Active
+Start Time:             <sysdate>       (next event check will run at this time)
+Click "Create"
+
+"Event System - Control Panel" screen should show up with all even assignments 
+registered to the host you used in the previous step.  The row will be colored 
+"red" due to "behind schedule" status of the new assignment, if your background 
+process (bgproc) was started on the management server it should process this new 
+assignment next times it runs.
+
+
+4. CONTROLLING BACKGROUND PROCESSES
+
+You can check background processes status on the management server by using the 
+following script:
+
+   % cd $SYS_TOP/bin/
+   % bstat
+
+
+thost.TUTOR-> cd $SYS_TOP/bin/
+thost.TUTOR-> bstat
+Content-type: text/plain
+
+-----------------------------------------
+ Date:      Wed Jul 16 15:40:46 PDT 2003
+ Hostname:  thost
+-----------------------------------------
+
+Current number of active processes:  0
+
+thost.TUTOR->
+
+
+As you see the background processes are not active, lets start them up:
+   % startup.sh local bgproc/justagate@<MGM_TNS_ALIAS>
+   WHERE:
+      local
+        tells BGPROC that this is the management server not remote host
+      
+      <MGM_TNS_ALIAS>
+        TNS alias to the database that hosts EVNT's repository
+      
+thost.TUTOR-> startup.sh local bgproc/justagate@TUTOR
+startup:        in /u01/app/oracle/admin/scripts/mon/sys/bin ...
+
+PL/SQL procedure successfully completed.
+
+
+Commit complete.
+
+
+PL/SQL procedure successfully completed.
+
+
+Commit complete.
+
+Content-type: text/plain
+
+-----------------------------------------
+ Date:      Wed Jul 16 15:42:05 PDT 2003
+ Hostname:  thost
+-----------------------------------------
+
+Current number of active processes:  7
+
+  oracle 10365  9658  1 15:42:02 pts/4    0:00 /bin/ksh startup.sh local bgproc/justagate@TUTOR
+  oracle 10376 10365  1 15:42:03 pts/4    0:00 /bin/ksh ./bgman.sh EVNT evntlistl.sh 5
+  oracle 10377 10365  0 15:42:04 pts/4    0:00 /bin/ksh ./mailbg.sh
+  oracle 10375 10365  0 15:42:03 pts/4    0:00 /bin/ksh ./bgman.sh COLL colllist.sh 30
+  oracle 10388 10377  0 15:42:04 pts/4    0:00 /bin/ksh /u01/app/oracle/admin/scripts/mon/sys/bin/mailman.sh
+  oracle 10393 10388  1 15:42:04 pts/4    0:00 sqlplus -s bgproc/justagate@TUTOR
+  oracle 10404 10394  1 15:42:04 pts/4    0:00 sqlplus -s bgproc/justagate@TUTOR
+  oracle 10405 10400  1 15:42:04 pts/4    0:00 sqlplus -s bgproc/justagate@TUTOR
+
+
+Lets check for the status now:
+
+thost.TUTOR-> bstat
+Content-type: text/plain
+
+-----------------------------------------
+ Date:      Wed Jul 16 15:42:52 PDT 2003
+ Hostname:  thost
+-----------------------------------------
+
+Current number of active processes:  3
+
+  oracle 10376     1  1 15:42:03 pts/4    0:00 /bin/ksh ./bgman.sh EVNT evntlistl.sh 5
+  oracle 10377     1  0 15:42:04 pts/4    0:00 /bin/ksh ./mailbg.sh
+  oracle 10375     1  0 15:42:03 pts/4    0:00 /bin/ksh ./bgman.sh COLL colllist.sh 30
+
+Event [EVNT] and collection [COLL] background processes are active waiting for 
+work to process; mailbg.sh is the background mail system.
+
+
+5. CHECKING EVENT ASSIGNMENT STATUS
+  
+Things are running, lets go check what happened to the event assignment we just 
+created ... It's still colored "red"!  What just happened?  Take a look at the 
+"STS" column ... it has letter "B" in there which means that the assignment is 
+broken.  Now go check your "sysadmin" email that you setup in MON.env file, you 
+should have the following email message there:
+
+
+SUBJECT: ERROR_running_EVNT(thost): 1
+
+Wed Jul 16 15:42:16 PDT 2003  ERROR:    running EVNT assigment: 1 
+MON__H_NAME=rhost
+MON__E_ID=4
+MON__S_NAME=RDATA
+MON__E_FILE_NAME=tabsppct.sh
+MON__CONNECT_STRING=mon/justagate@RDATA
+DER__last_sev_level=
+DER__CONTINUE=YES
+DER__last_et_orig_et_id=
+DER__HOLD_REASON=
+DER__last_et_id=
+PARAM__PCT_USED_TRES=80
+PARAM__cp_code=
+PARAM__ep_code=TBSP_80PCT
+PARAM__ep_hold_level=
+EVENT_FILE=/u01/app/oracle/admin/scripts/mon/evnt/seed/bin/tabsppct.sh
+EVENT_LOG=/u01/app/oracle/admin/scripts/mon/shared/log/tabsppct.sh.1.rhost.RDATA.2003.07.16_154209.log
+Calling event file: 
+/u01/app/oracle/admin/scripts/mon/evnt/seed/bin/tabsppct.sh 
+/u01/app/oracle/admin/scripts/mon/shared/tmp/evntproc.sh.1.2003.07.16_154209.new 
+/u01/app/oracle/admin/scripts/mon/shared/log/tabsppct.sh.1.rhost.RDATA.2003.07.16_154209.log 
+/u01/app/oracle/admin/scripts/mon/shared/tmp/evntproc.sh.1.2003.07.16_154209.clr
+ERROR:
+ORA-12154: TNS:could not resolve service name
+.
+.
+.
+checking exit code ...
+ERROR:   While executing event file: 
+/u01/app/oracle/admin/scripts/mon/evnt/seed/bin/tabsppct.sh !
+
+Our assignment errored out due to "ORA-12154: TNS:could not resolve service 
+name" that's expected since we haven't configured our target database's TNS 
+alias on the management server (well at least I haven't yet ...).
+
+Lets fix this.  Go to the management server and make sure MON.env is sourced:
+   % cd $TNS_ADMIN
+   % vi tnsnames.ora
+Now add the TNS alias for the database that was used in step #3.
+
+Check by using tnsping (my TNS alias is RDATA you will have something else):
+thost.TUTOR-> tnsping RDATA
+
+TNS Ping Utility for Solaris: Version 8.1.7.4.0 - Production on 16-JUL-2003 15:59:25
+
+(c) Copyright 1997 Oracle Corporation.  All rights reserved.
+
+Attempting to contact (ADDRESS=(PROTOCOL=TCP)(HOST=rhost)(PORT=1521))
+OK (20 msec)
+
+Ok, things look better now, lets see if event assignment will complete now ... 
+You can either wait until BGPROC will process it or you can speed it up a bit by 
+changing the "Start Time" of the assignment:
+
+Click on the "Edit" link of the event assignment on the "Control Panel" screen.
+Change the following:
+Status:         from "Broken" to "Active"
+Start Time:     <sysdate>
+Click "Update"
+
+The system will take you back to the Control Panel screen, click refresh button 
+few times ... the row should become "normal" "active" color and the event will 
+either have triggered or just didn't find and problems with your tablespaces. In 
+my case it triggered so I will check what's up with my tablespaces.  
+
+
+6. EVENT ASSIGNMENT TRIGGER NAVIGATOR
+
+Before we go further I'll explain few columns on this screen:
+
+Column Name     Description
+--------------  ----------------------
+Control Links   self explanatory
+Id              assignment's ID
+Target          target host (and optionally sid)
+PND             number of pending triggers
+OLD             number of old triggers (old triggers are the triggers that were 
+                created between the first and the last time event was triggered)
+CLR             number of cleared triggers
+Threshold       event's threshold
+Page List       self explanatory
+STS             status (A=Active, B=Broken, I=Inactive)
+INT(M)          interval in minutes
+Scheduled       time the event is scheduled to run at
+Finished        time the event finished last time it ran
+RT(S)           last known elapsed runtime time in seconds
+RMT             agent type (YES=Remote, NO=Local)
+
+Easy right?  Now on to the trigger screen ...
+
+Click "1" in the PND column (again this is assuming your tablespaces had issues 
+that were discovered by the event trigger)
+
+You should now see "Pending Triggers" screen with the following columns:
+Column                  Description
+---------------------   --------------------
+Target                  target host (and optionally sid)
+Time                    trigger time
+Status                  name of the threshold that triggered the event
+TID                     THIS     trigger ID (trigger ID)
+OID                     ORIGINAL trigger ID (trigger ID that started it all)
+CID                     CLEARED  trigger ID (trigger ID that cleared it all or 
+                        blank if event is not cleared)
+PID                     PREVIOUS trigger ID (previous trigger ID in the chain)
+Acknowledgement         either admin NAME who acknowledged THIS trigger or "Not Required"
+NOTIF                   number of notifications that were send out for THIS trigger
+NOTES                   either number of notes for THIS trigger or "Add" link
+P                       Phase status (P=Pending, C=Closed, O=Old)
+M                       Mail status (P=Pending, C=Complete)
+
+Click on the "trigger id" link in the "TID" column.
+
+"Trigger Navigator" screen should appear:
+Column          Description
+--------------- -----------------
+|<< STR         rewind to the first trigger
+<< REW          rewind to the previous trigger
+CUR             current trigger ID
+FRW >>          forward to the next trigger
+END >>|         forward to the last trigger
+Target          target host (and optionally sid) 
+Trigger Time    trigger time 
+Status          name of the threshold that triggered the event 
+Description     description of the threshold that triggered the event
+Acknowledgement either admin NAME who acknowledged THIS trigger or "NOT REQUIRED" 
+Notifications   number of notifications that were send out for THIS trigger 
+Notes           either number of notes for THIS trigger or "Add" link 
+
+"Compare <THIS trigger id> with" button allows comparison of THIS trigger's 
+attributes with any previous or following triggers (if present).
+
+"[ALL VALUES]" table displays THIS trigger's attributes.
+
+"Trigger Output" table displays THIS triggers's output.
+
+That's it, pretty simple so far.
+
+
+7. EVENT TRIGGERS ANALYSIS TOOLS
+
+Lets review what ways we have to slice and dice our event triggers.
+
+Look at the navigator bar on your left:
+"Pending Events" - displays all pending event triggers.
+"Today's Events" - allows daily navigation and detailed event trigger analysis 
+                   by target.
+"Weekly Trends"  - allows weekly navigation and daily analysis by event.
+"Thresholds"     - then click "TABSP_USAGE" event in "Control Links" column 
+                   "triggers" link displays all triggers generated by this event 
+                   threshold across all targets.
+"Trigger Lookup" - single trigger lookup by ID takes you directly to trigger 
+                   navigator screen.
+"Monthly Trends" - allows yearly navigation and monthly analysis by event. 
+                   Even if triggers are purged this module will still give you 
+                   counts and details but without drilldown capability for 
+                   purged triggers.
+
+8. REPORTS
+
+There are two types of reports available with EVNT system:
+   1) repository based reports that run off of data collected by events.
+   2) remote/db link based reports that go directly to the target database for 
+      up-to-date information.
+
+Just navigate through the following links - it's self explanatory:
+"Reports (Repository)"
+"Reports (DB Links)"
+
+________________________________________________________________________________
+            Copyright (c) 2009 HASHJOIN Corporation All rights reserved.

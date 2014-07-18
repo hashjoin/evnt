@@ -1,0 +1,76 @@
+-- C:\vit\dev\Designer\event_system\cdsddl.ind
+--
+-- Generated for Oracle 8.1 on Mon Mar 24  14:44:26 2003 by Server Generator 6.5.52.1.0
+
+PROMPT Creating Index 'EVENT_TRIGGER_NOTES_INDX01'
+CREATE INDEX EVENT_TRIGGER_NOTES_INDX01 ON EVENT_TRIGGER_NOTES
+ (ET_ID)
+/
+
+PROMPT Creating Index 'EVENT_TRIGGER_OUTPUT_INDX01'
+CREATE INDEX EVENT_TRIGGER_OUTPUT_INDX01 ON EVENT_TRIGGER_OUTPUT
+ (ET_ID) local
+/
+
+PROMPT Creating Index 'EVENT_TRIGGER_NOTIF_INDX01'
+CREATE INDEX EVENT_TRIGGER_NOTIF_INDX01 ON EVENT_TRIGGER_NOTIF
+ (ET_ID)
+/
+
+PROMPT Creating Index 'X_CG_REF_CODES_1'
+CREATE INDEX X_CG_REF_CODES_1 ON CG_REF_CODES
+ (RV_DOMAIN
+ ,RV_LOW_VALUE)
+/
+
+PROMPT Creating Index 'EVENT_TRIGGER_DETAILS_INDX01'
+CREATE INDEX EVENT_TRIGGER_DETAILS_INDX01 ON EVENT_TRIGGER_DETAILS
+ (ET_ID) local
+/
+
+-- make sure that all thresholds for dbtopses.sh are named %TOP_SESS%
+-- otherwise this index is not going to work.  This is tied to
+-- evnt_web_pkg.disp_triggers:top_sess_triggers_cur
+--
+create index etd_dbtopses_fbi01 
+on event_trigger_details
+( case when etd_status like '%TOP_SESS%' then to_char(etd_trigger_time,'RRRR-MON-DD') end,
+  case when etd_status like '%TOP_SESS%' then et_id end,
+  case when etd_status like '%TOP_SESS%' then etd_attribute1 end )
+local;
+
+PROMPT Creating Index 'EVENT_TRIGGERS_FBI01'
+CREATE INDEX EVENT_TRIGGERS_FBI01 ON EVENT_TRIGGERS
+ (decode(et_phase_status,'P','P',null)) local;
+
+PROMPT Creating Index 'EVENT_TRIGGERS_FBI02'
+CREATE INDEX EVENT_TRIGGERS_FBI02 ON EVENT_TRIGGERS
+ (TRUNC(et_trigger_time,'IW')) local;
+
+PROMPT Creating Index 'EVENT_TRIGGERS_FBI03'
+CREATE INDEX EVENT_TRIGGERS_FBI03 ON EVENT_TRIGGERS
+ (trunc(et_trigger_time)) local;
+
+PROMPT Creating Index 'EVENT_TRIGGERS_FBI04'
+CREATE INDEX EVENT_TRIGGERS_FBI04 ON EVENT_TRIGGERS
+ (e_id,trunc(et_trigger_time)) local;
+
+
+PROMPT Creating Index 'EVENT_TRIGGERS_INDX03'
+CREATE INDEX EVENT_TRIGGERS_INDX03 ON EVENT_TRIGGERS
+ (ET_PREV_ET_ID
+ ,ET_ID) local
+/
+
+PROMPT Creating Index 'EVENT_TRIGGERS_INDX02'
+CREATE INDEX EVENT_TRIGGERS_INDX02 ON EVENT_TRIGGERS
+ (ET_ACK_FLAG
+ ,ET_ACK_DATE
+ ,ET_ID) local
+/
+
+PROMPT Creating Index 'EVENT_TRIGGERS_INDX01'
+CREATE INDEX EVENT_TRIGGERS_INDX01 ON EVENT_TRIGGERS
+ (ET_ORIG_ET_ID) local
+/
+

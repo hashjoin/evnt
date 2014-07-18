@@ -1,0 +1,39 @@
+#!/bin/ksh
+#
+# $Header bstat 06/10/2003 1.1
+#
+# File:
+#	bstat
+#
+# Author:
+#	Vitaliy Mogilevskiy VMOGILEV www.dbatoolz.com
+#
+# Usage:
+#	bstat
+#
+# Desc:
+#	Prints status of active background process
+#
+# History:
+#	10-JUN-2002	VMOGILEV	Created
+#
+
+
+# disable filename globbing
+set -f
+
+all_proc="bgman|bgproc|evntproc|mail|collproc"
+num_of_all=`ps -ef | egrep "${all_proc}"| grep -v grep | grep -v sendmail | wc -l`
+
+echo Content-type: text/plain
+echo
+echo "-----------------------------------------"
+echo " Date:     " `date`
+echo " Hostname: " `hostname`
+echo "-----------------------------------------"
+echo " "
+echo "Current number of active processes: " $num_of_all
+echo " "
+
+ps -ef | egrep "${all_proc}"| grep -v grep | grep -v sendmail
+
