@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------------
-#         Copyright (c) 2009 HASHJOIN Corporation All rights reserved.
+#         Copyright (c) 2009,2014 HASHJOIN Corporation All rights reserved.
 # ------------------------------------------------------------------------------
 # FILE:         TUTOR1.txt
 # VERSION:      v3.5.01
