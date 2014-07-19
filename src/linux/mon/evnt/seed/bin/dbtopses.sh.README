@@ -1,5 +1,7 @@
 To save attribute file to a remote repository / reporting server - create the user and the following table there:
 
+alter session set current_schema=statdb;
+
 --drop table ash_monitor_all;
 create table ash_monitor_all (
         db_name                                 varchar2(256) not null
@@ -19,7 +21,7 @@ create table ash_monitor_all (
 );
 
 alter table ash_monitor_all add
-constraint AMA_PK PRIMARY KEY (db_name,SAMPLE_ID);
+constraint AMA_PK PRIMARY KEY (db_name,session_id,sql_id,event,ssecs);
 
 create index ama_indx01 on ash_monitor_all(db_name,sql_id);
 create index ama_indx02 on ash_monitor_all(db_name,machine);
