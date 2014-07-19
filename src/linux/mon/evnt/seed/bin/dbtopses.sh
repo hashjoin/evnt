@@ -2,7 +2,7 @@
 #
 # File:
 #       dbtopses.sh
-# EVNT_REG:	DB_TOP_SESS SEEDMON 1.10
+# EVNT_REG:	DB_TOP_SESS SEEDMON 1.11
 # <EVNT_NAME>DB Top Sessions</EVNT_NAME>
 #
 # Author:
@@ -11,15 +11,15 @@
 # Usage:
 # <EVNT_DESC>
 # Reports TOP Sessions from ASH
-# 
+#
 # REPORT ATTRIBUTES:
 # -----------------------------
 # MACHINE
 # SQL_ID
 # SQL_HASH_VALUE
 # SPID
-# 
-# 
+#
+#
 # PARAMETER       DESCRIPTION                                 EXAMPLE
 # --------------  ------------------------------------------  --------
 # SECS_ACTIVE     Active ASH Seconds Threshold                30
@@ -29,7 +29,7 @@
 # TSEC_CRIT       Critical Level of seconds spent on event    7000
 #			[default=7000]
 # HOST_DOMAIN     Domain Name to Filter out from hostname
-#                 for purly cosmetic reasons to shorten the 
+#                 for purly cosmetic reasons to shorten the
 #                 column of the report                        .eharmony.com
 # </EVNT_DESC>
 #
@@ -44,6 +44,7 @@
 #       VMOGILEV        03/17/2014      v1.8	Added Blocks
 #       VMOGILEV        03/18/2014      v1.9	Added CRITICAL|WARNING_LEVEL
 #       VMOGILEV        03/18/2014      v1.10	Increased P1 width
+#       VMOGILEV        07/03/2014      v1.11	Added save to REPDB
 #
 
 
@@ -53,6 +54,7 @@ clrfile=$3
 
 REMOTE_HOST="$MON__H_NAME"
 SHORT_HOST=${REMOTE_HOST%%.*}
+REPDB_CONNECT=${PARAM__REPDB_CONNECT}
 SECS_ACTIVE=${PARAM__SECS_ACTIVE}
 HOST_DOMAIN=${PARAM__HOST_DOMAIN}
 TSEC_CRIT=${PARAM__TSEC_CRIT}
@@ -118,11 +120,11 @@ set lines 1000
 spool $chkfile
 select x from (
 select
-   case 
+   case
       when max(tsecs) >= ${TSEC_CRIT} then 'CRITICAL_LEVEL'
       when max(tsecs) >= ${TSEC_WARN} then 'WARNING_LEVEL'
    end as x
-from 
+from
               (select count(*) tsecs
                ,      event
                from top_sessions
@@ -192,7 +194,7 @@ select count(*) tsecs
 ,      sql_plan_hash_value
 from top_sessions
 where ea_id = $MON__EA_ID
-group by 
+group by
        decode(service_name,'SYS\$BACKGROUND',substr(program,-5,3),nvl(service_name,'-EXPIRED-'))
 ,      nvl(sql_id,'null')
 ,      sql_plan_hash_value
@@ -246,7 +248,7 @@ select count(*) tsecs
 ,      nvl(wait_class,'null') wait_class
 from top_sessions
 where ea_id = $MON__EA_ID
-group by 
+group by
        decode(service_name,'SYS\$BACKGROUND',substr(program,-5,3),nvl(service_name,'-EXPIRED-'))
 ,      nvl(event,'ON CPU')
 ,      nvl(wait_class,'null')
@@ -258,7 +260,7 @@ select count(*) tsecs
 ,      decode(service_name,'SYS\$BACKGROUND',substr(program,-5,3),nvl(service_name,'-EXPIRED-')) service_name
 from top_sessions
 where ea_id = $MON__EA_ID
-group by 
+group by
        nvl(rtrim(substr(machine,1,instr(machine,'${HOST_DOMAIN}')),'.'),nvl(machine,substr(program,nvl(instr(program,'@'),0)+1)))
 ,      decode(service_name,'SYS\$BACKGROUND',substr(program,-5,3),nvl(service_name,'-EXPIRED-'))
 order by count(*) desc;
@@ -320,19 +322,83 @@ col SESSION_ID format 99999 heading "SID"
 col SESSION_SERIAL# format 999999 heading "SERIAL"
 col CLIENT_ID format a30 trunc
 
-select count(*) cnt, ash_secs, 
+select count(*) cnt, ash_secs,
        session_id, session_serial#,
-       service_name, machine, 
+       service_name, machine,
        program, CLIENT_ID
-from top_sessions 
-where ea_id = $MON__EA_ID 
-group by ash_secs, service_name, 
-         machine, program, session_id, 
+from top_sessions
+where ea_id = $MON__EA_ID
+group by ash_secs, service_name,
+         machine, program, session_id,
          session_serial#, CLIENT_ID
 order by session_id;
 
 
 spool off
+
+
+-- DAT file generation for remote REPORTING save
+--
+col min_sample_id new_value _min_sample_id
+
+select min(SAMPLE_ID) min_sample_id
+  from top_sessions
+ where ea_id = $MON__EA_ID;
+
+set pages 0
+set feed off
+set head off
+set lines 400
+set trims on
+set verify off
+
+spool $chkfile.dat
+
+select
+${REMOTE_HOST}:${MON__S_NAME}
+||','||&&_min_sample_id
+||','||to_char(sysdate,'YYYYMMDDHH24MISS')
+||','||x.ASH_SECS
+||','||x.MACHINE
+||','||x.SERVICE_NAME
+||','||x.SESSION_ID
+||','||x.SESSION_SERIAL#
+||','||x.SSECS
+||','||x.SQL_ID
+||','||x.SQL_PLAN_HASH_VALUE
+||','||x.EVENT
+||','||x.WAIT_CLASS
+||','||x.CLIENT_ID
+from (
+		select ash_secs tsecs
+		,      nvl(rtrim(substr(machine,1,instr(machine,'${HOST_DOMAIN}')),'.'),nvl(machine,substr(program,nvl(instr(program,'@'),0)+1))) machine
+		,      decode(service_name,'SYS\$BACKGROUND',substr(program,-5,3),nvl(service_name,'-EXPIRED-')) service_name
+		,      session_id
+		,      session_serial#
+		,      count(*) ssecs
+		,      nvl(sql_id,'null') sql_id
+		,      sql_plan_hash_value
+		,      nvl(event,'ON CPU') event
+		,      nvl(wait_class,'null') wait_class
+		,      nvl(CLIENT_ID,'null') CLIENT_ID
+		from top_sessions
+		where ea_id = $MON__EA_ID
+		group by
+			   ash_secs,
+			   nvl(rtrim(substr(machine,1,instr(machine,'${HOST_DOMAIN}')),'.'),nvl(machine,substr(program,nvl(instr(program,'@'),0)+1))),
+			   decode(service_name,'SYS\$BACKGROUND',substr(program,-5,3),nvl(service_name,'-EXPIRED-')),
+			   session_id, session_serial#,
+			   nvl(sql_id,'null'), sql_plan_hash_value,
+			   nvl(event,'ON CPU'),
+			   nvl(wait_class,'null'),
+			   nvl(CLIENT_ID,'null')
+		order by session_id
+		,        session_serial#
+		,        count(*) desc
+) x;
+
+spool off
+
 exit
 CHK
 
@@ -343,4 +409,65 @@ if [ $? -gt 0 ]; then
 fi
 
 rm -f $chkfile.err
+
+
+if [ ${REPDB_CONNECT}"x" == "x" ]; then
+    rm -f $chkfile.dat
+    exit;
+fi
+
+if [ `cat $chkfile.dat | wc -l` -gt 0 ]; then
+	echo "dat file has rows loading to reporting ..."
+else
+	echo "NO dat file -- exiting ..."
+	exit;
+fi
+
+
+echo "
+LOAD DATA
+INTO TABLE ash_monitor_all
+APPEND
+FIELDS TERMINATED BY ','
+TRAILING NULLCOLS
+(
+  db_name
+, sample_id
+, trigger_time			\"to_date(:trigger_time, 'YYYYMMDDHH24MISS')\"
+, ash_secs
+, machine
+, service_name
+, session_id
+, session_serial#
+, ssecs
+, sql_id
+, sql_plan_hash_value
+, event
+, wait_class
+, client_id
+)" > $chkfile.sqlldr.ctl
+
+sqlldr ${REPDB_CONNECT} \
+    data=$chkfile.dat \
+    control=$chkfile.sqlldr.ctl \
+    log=$chkfile.sqlldr.log \
+    discard=$chkfile.sqlldr.bad
+
+## check for errors
+##
+if [ $? -gt 0 ]; then
+	head $chkfile.dat
+	tail $chkfile.dat
+    cat $chkfile.sqlldr.bad
+    cat $chkfile.sqlldr.log
+    rm -f $chkfile.sqlldr.ctl
+    rm -f $chkfile.sqlldr.bad
+    rm -f $chkfile.sqlldr.log
+    exit 1;
+fi
+
+rm -f $chkfile.dat
+rm -f $chkfile.sqlldr.ctl
+rm -f $chkfile.sqlldr.bad
+rm -f $chkfile.sqlldr.log
 
