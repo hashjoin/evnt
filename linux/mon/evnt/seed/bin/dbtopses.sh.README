@@ -21,7 +21,7 @@ create table ash_monitor_all (
 );
 
 alter table ash_monitor_all add
-constraint AMA_PK PRIMARY KEY (db_name,session_id,sql_id,event,ssecs);
+constraint AMA_PK PRIMARY KEY (db_name,SAMPLE_ID,session_id,sql_id,event,ssecs);
 
 create index ama_indx01 on ash_monitor_all(db_name,sql_id);
 create index ama_indx02 on ash_monitor_all(db_name,machine);
