@@ -355,7 +355,7 @@ set verify off
 spool $chkfile.dat
 
 select
-${REMOTE_HOST}:${MON__S_NAME}
+'${REMOTE_HOST}:${MON__S_NAME}'
 ||','||&&_min_sample_id
 ||','||to_char(sysdate,'YYYYMMDDHH24MISS')
 ||','||x.ASH_SECS
