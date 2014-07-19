@@ -370,7 +370,7 @@ select
 ||','||x.WAIT_CLASS
 ||','||x.CLIENT_ID
 from (
-		select ash_secs tsecs
+		select ash_secs
 		,      nvl(rtrim(substr(machine,1,instr(machine,'${HOST_DOMAIN}')),'.'),nvl(machine,substr(program,nvl(instr(program,'@'),0)+1))) machine
 		,      decode(service_name,'SYS\$BACKGROUND',substr(program,-5,3),nvl(service_name,'-EXPIRED-')) service_name
 		,      session_id
@@ -456,13 +456,10 @@ sqlldr ${REPDB_CONNECT} \
 ## check for errors
 ##
 if [ $? -gt 0 ]; then
-	head $chkfile.dat
-	tail $chkfile.dat
-    cat $chkfile.sqlldr.bad
-    cat $chkfile.sqlldr.log
-    rm -f $chkfile.sqlldr.ctl
-    rm -f $chkfile.sqlldr.bad
-    rm -f $chkfile.sqlldr.log
+    echo "dat: $chkfile.dat"
+    echo "bad: $chkfile.sqlldr.bad"
+    echo "log: $chkfile.sqlldr.log"
+    echo "ctl: $chkfile.sqlldr.ctl"
     exit 1;
 fi
 
