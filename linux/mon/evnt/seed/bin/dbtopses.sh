@@ -2,7 +2,7 @@
 #
 # File:
 #       dbtopses.sh
-# EVNT_REG:	DB_TOP_SESS SEEDMON 1.11
+# EVNT_REG:	DB_TOP_SESS SEEDMON 1.12
 # <EVNT_NAME>DB Top Sessions</EVNT_NAME>
 #
 # Author:
@@ -45,6 +45,7 @@
 #       VMOGILEV        03/18/2014      v1.9	Added CRITICAL|WARNING_LEVEL
 #       VMOGILEV        03/18/2014      v1.10	Increased P1 width
 #       VMOGILEV        07/03/2014      v1.11	Added save to REPDB
+#       VMOGILEV        07/21/2014      v1.12	Fixed null issue on REP Upload
 #
 
 
@@ -359,7 +360,7 @@ select
 ||','||'&&_min_sample_id'
 ||','||to_char(sysdate,'YYYYMMDDHH24MISS')
 ||','||x.ASH_SECS
-||','||x.MACHINE
+||','||nvl(x.MACHINE,'null')
 ||','||x.SERVICE_NAME
 ||','||x.SESSION_ID
 ||','||x.SESSION_SERIAL#
