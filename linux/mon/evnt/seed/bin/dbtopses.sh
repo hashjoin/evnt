@@ -448,24 +448,5 @@ TRAILING NULLCOLS
 , client_id
 )" > $chkfile.sqlldr.ctl
 
-sqlldr ${REPDB_CONNECT} \
-    data=$chkfile.dat \
-    control=$chkfile.sqlldr.ctl \
-    log=$chkfile.sqlldr.log \
-    discard=$chkfile.sqlldr.bad
 
-## check for errors
-##
-if [ $? -gt 0 ]; then
-    echo "dat: $chkfile.dat"
-    echo "bad: $chkfile.sqlldr.bad"
-    echo "log: $chkfile.sqlldr.log"
-    echo "ctl: $chkfile.sqlldr.ctl"
-    exit 1;
-fi
-
-rm -f $chkfile.dat
-rm -f $chkfile.sqlldr.ctl
-rm -f $chkfile.sqlldr.bad
-rm -f $chkfile.sqlldr.log
-
+$SYS_TOP/bin/repdbload.sh ${REPDB_CONNECT} $chkfile.dat $chkfile.sqlldr.ctl &
