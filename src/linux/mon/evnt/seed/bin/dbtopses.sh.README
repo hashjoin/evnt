@@ -18,12 +18,14 @@ create table ash_monitor_all (
 ,       event                                   VARCHAR2(64)
 ,       wait_class                              VARCHAR2(64)
 ,       CLIENT_ID                               VARCHAR2(64)
-);
+)
+    PARTITION BY RANGE (trigger_time) 
+    INTERVAL(NUMTOYMINTERVAL(1, 'MONTH')) 
+(  
+   PARTITION ama_p1 VALUES LESS THAN (TO_DATE('1-7-2014', 'DD-MM-YYYY')) 
+); 
 
-alter table ash_monitor_all add
-constraint AMA_PK PRIMARY KEY (db_name,SAMPLE_ID,sql_id,event,ssecs,session_id,session_serial#,sql_plan_hash_value);
-
-create index ama_indx01 on ash_monitor_all(db_name,sql_id);
-create index ama_indx02 on ash_monitor_all(db_name,machine);
-create index ama_indx03 on ash_monitor_all(db_name,service_name);
+create index ama_indx01 on ash_monitor_all(db_name,sql_id) local;
+create index ama_indx02 on ash_monitor_all(db_name,machine) local;
+create index ama_indx03 on ash_monitor_all(db_name,service_name) local;
 
