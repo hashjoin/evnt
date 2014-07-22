@@ -1,6 +1,6 @@
 #!/bin/ksh
 #
-# $Header repdbload.sh 07/21/2014 1.1
+# $Header repdbload.sh 07/21/2014 1.2
 #
 # File:
 #	repdbload.sh
@@ -17,6 +17,7 @@
 #
 # History:
 #	21-JUL-2014	VMOGILEV	(1.1) Created
+#	21-JUL-2014	VMOGILEV	(1.2) Added Check for parse result
 #
 
 
@@ -124,6 +125,9 @@ do
     fi
 done
 
+if [ ${connectdb}"x" == "x" ]; then
+    echo "`date`    ${DATBASE}: didn't find any targets for ${REPDB} ..." >> $logfile
+fi
 
 mailfile=${logfile}.${DATBASE}.mail
 errcnt=`ls -l ${DAT}.*.error | wc -l`
