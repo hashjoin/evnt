@@ -1,8 +1,14 @@
 To save attribute file to a remote repository / reporting server - create the user and the following table there:
 
+-- to research
+--
+-- Virtual Column-Based Partitioning
+-- http://docs.oracle.com/cd/E11882_01/server.112/e25523/partition.htm#CACHFHHF
+
+
 alter session set current_schema=statdb;
 
---drop table ash_monitor_all;
+drop table ash_monitor_all;
 create table ash_monitor_all (
         db_name                                 varchar2(256) not null
 ,       SAMPLE_ID                               number not null
@@ -19,13 +25,12 @@ create table ash_monitor_all (
 ,       wait_class                              VARCHAR2(64)
 ,       CLIENT_ID                               VARCHAR2(64)
 )
-    PARTITION BY RANGE (trigger_time) 
-    INTERVAL(NUMTOYMINTERVAL(1, 'MONTH')) 
-(  
-   PARTITION ama_p1 VALUES LESS THAN (TO_DATE('1-7-2014', 'DD-MM-YYYY')) 
-); 
+    PARTITION BY RANGE (trigger_time)
+    INTERVAL(NUMTODSINTERVAL(1, 'DAY'))
+(
+   PARTITION ama_empty VALUES LESS THAN (TO_DATE('1-1-2000', 'DD-MM-YYYY'))
+);
 
 create index ama_indx01 on ash_monitor_all(db_name,sql_id) local;
 create index ama_indx02 on ash_monitor_all(db_name,machine) local;
 create index ama_indx03 on ash_monitor_all(db_name,service_name) local;
-
