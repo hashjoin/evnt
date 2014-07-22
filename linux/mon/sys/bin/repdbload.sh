@@ -1,6 +1,6 @@
 #!/bin/ksh
 #
-# $Header repdbload.sh 07/21/2014 1.2
+# $Header repdbload.sh 07/22/2014 1.3
 #
 # File:
 #	repdbload.sh
@@ -18,6 +18,7 @@
 # History:
 #	21-JUL-2014	VMOGILEV	(1.1) Created
 #	21-JUL-2014	VMOGILEV	(1.2) Added Check for parse result
+#	22-JUL-2014	VMOGILEV	(1.3) Added ctlsave to queue up DAT/CTL for maintenance of REPDB
 #
 
 
@@ -80,6 +81,24 @@ fi
 ## CODE STARTS HERE
 ##
 
+
+ctlsave() {
+
+REPDB_CONNECT=$1
+DBNAME=`echo $REPDB_CONNECT | awk -F"@" '{print $2}'`
+
+if [ ${DBNAME}"x" == "x" ]; then
+     DBNAME=${REPDB}_DB_uknown;
+fi
+
+savedir=$SHARE_TOP/wrk/${DBNAME}
+
+mkdir -p $savedir
+cp -p ${CTL} $savedir/
+cp -p ${DAT} $savedir/
+
+}
+
 ctlload() {
 
 REPDB_CONNECT=$1
@@ -120,6 +139,9 @@ do
     if [ ${enableddb}"x" == "Yx" ]; then
         echo "`date`    ${DATBASE}:     found target - ${connectdb} loading ..." >> $logfile
         ctlload ${connectdb}
+    elif [ ${enableddb}"x" == "Qx" ]; then
+        echo "`date`    ${DATBASE}:     found target - ${connectdb} it's set to QUEUE - saving DAT/CTL ..." >> $logfile
+        ctlsave ${connectdb}
     else
         echo "`date`    ${DATBASE}:     found target - ${connectdb} but it's disabled" >> $logfile
     fi
