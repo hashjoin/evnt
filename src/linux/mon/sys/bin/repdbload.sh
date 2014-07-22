@@ -117,7 +117,7 @@ for x in `grep ^${REPDB} $cfgfile`
 do
     connectdb=`echo $x | awk -F: '{print $2}'`
     enableddb=`echo $x | awk -F: '{print $3}'`
-    if [ ${enableddb}"x" == "Y" ]; then
+    if [ ${enableddb}"x" == "Yx" ]; then
         echo "`date`    ${DATBASE}: found target - ${connectdb} loading ..." >> $logfile
         ctlload ${connectdb}
     else
