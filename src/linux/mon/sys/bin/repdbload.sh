@@ -118,15 +118,15 @@ do
     connectdb=`echo $x | awk -F: '{print $2}'`
     enableddb=`echo $x | awk -F: '{print $3}'`
     if [ ${enableddb}"x" == "Yx" ]; then
-        echo "`date`    ${DATBASE}: found target - ${connectdb} loading ..." >> $logfile
+        echo "`date`    ${DATBASE}:     found target - ${connectdb} loading ..." >> $logfile
         ctlload ${connectdb}
     else
-        echo "`date`    ${DATBASE}: found target - ${connectdb} but it's disabled" >> $logfile
+        echo "`date`    ${DATBASE}:     found target - ${connectdb} but it's disabled" >> $logfile
     fi
 done
 
 if [ ${connectdb}"x" == "x" ]; then
-    echo "`date`    ${DATBASE}: didn't find any targets for ${REPDB} ..." >> $logfile
+    echo "`date`    ${DATBASE}:     didn't find any targets for ${REPDB} ..." >> $logfile
 fi
 
 mailfile=${logfile}.${DATBASE}.mail
