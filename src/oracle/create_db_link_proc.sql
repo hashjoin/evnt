@@ -7,7 +7,7 @@ CREATE OR REPLACE PROCEDURE CREATE_DB_LINK
 -- SOURCE NAME   : create_db_link_proc.sql
 -- DATE CREATED  : 04/02/2001
 -- APPLICATION   : EVENTS
--- VERSION       : 1.3
+-- VERSION       : 1.4
 -- DESCRIPTION   : Various Utils (see module for the details)
 -- EXAMPLE       :
 -- =====================================================================
@@ -15,11 +15,12 @@ CREATE OR REPLACE PROCEDURE CREATE_DB_LINK
 -- =====================================================================
 -- DATE      NAME          DESCRIPTION
 -- ---------------------------------------------------------------------
--- 05/17/02  vmogilev    created
--- 03/20/03  vmogilev    (1.1) fixed bug with mixed case db links
+-- 05/17/2002   vmogilev    created
+-- 03/20/2003   vmogilev    (1.1) fixed bug with mixed case db links
 -- 05/17/2008	vmogilev	(1.2) fixed bug with XAGP/AGP db links overlaps
 -- 09/29/2009	vmogilev	(1.3) added prefix to all ENVT db link to fix issue with SIDS that start with a number such as 10GR2
 --                                    where were causing "ORA-01729: database link name expected" error
+-- 07/23/2014	vmogilev	(1.4) switched to using P_TNS_ALIAS for l_db_link_name (used to be p_sid)
 -- ---------------------------------------------------------------------
  (P_SID IN VARCHAR2
  ,P_USERNAME IN VARCHAR2
@@ -40,7 +41,8 @@ CREATE OR REPLACE PROCEDURE CREATE_DB_LINK
    l_curr_sql VARCHAR2(4000);
    cull_db_link cull_db_link_cur%ROWTYPE;
 BEGIN
-   l_db_link_name := 'evnt_'||p_sid||'_'||p_username ;
+   --l_db_link_name := 'evnt_'||p_sid||'_'||p_username ;
+   l_db_link_name := 'evnt_'||P_TNS_ALIAS||'_'||p_username ;
    OPEN cull_db_link_cur(l_db_link_name, p_username);
    FETCH cull_db_link_cur INTO cull_db_link;
    IF cull_db_link_cur%FOUND THEN
