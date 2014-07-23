@@ -2,7 +2,7 @@
 #
 # File:
 #       srvdbload.sh
-# EVNT_REG:	SERVICE_LOAD SEEDMON 1.1 Y
+# EVNT_REG:	SERVICE_LOAD SEEDMON 1.2 Y
 # <EVNT_NAME>Load Monitor [SERVICE]</EVNT_NAME>
 #
 # Author:
@@ -42,6 +42,7 @@
 #
 # History:
 #       VMOGILEV        04/22/2014      v1.0 Created
+#       VMOGILEV        07/22/2014      v1.1 Switched to using repdbload.sh
 #
 
 
@@ -181,24 +182,6 @@ TRAILING NULLCOLS
 ,  snap_time          \"to_date(:end_time, 'YYYYMMDDHH24MISS')\"
 )" > $chkfile.sqlldr.ctl
 
-sqlldr ${REPDB_CONNECT} \
-    data=$chkfile \
-    control=$chkfile.sqlldr.ctl \
-    log=$chkfile.sqlldr.log \
-    discard=$chkfile.sqlldr.bad
-
-## check for errors
-##
-if [ $? -gt 0 ]; then
-	cat $chkfile.sqlldr.bad
-	cat $chkfile.sqlldr.log
-	rm -f $chkfile.sqlldr.ctl 
-	rm -f $chkfile.sqlldr.bad
-	rm -f $chkfile.sqlldr.log
-	exit 1;
-fi
-
-rm -f $chkfile.sqlldr.ctl 
-rm -f $chkfile.sqlldr.bad
-rm -f $chkfile.sqlldr.log
+cp -p $chkfile $chkfile.dat
+$SYS_TOP/bin/repdbload.sh ${REPDB_CONNECT} $chkfile.dat $chkfile.sqlldr.ctl &
 
