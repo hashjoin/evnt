@@ -1,39 +1,40 @@
 #!/bin/ksh
 #
-# $Header 3pariom.sh	DEC-20-2013	v1.4
+# $Header 3pariom.sh	2014-Jul-23	v1.5
 #
 # HISTORY:
 #	2013-Dec-18	v1.1	VMOGILEVSKIY	added check for service times
 #	2013-Dec-19	v1.2	VMOGILEVSKIY	added check for Qlen counts
 #	2013-Dec-20	v1.3	VMOGILEVSKIY	added drilldowns to disk level "statpd"
 #	2013-Dec-20	v1.4	VMOGILEVSKIY	added drilldowns to vlun level stats
-#
+#   2014-Jul-23 v1.5    VMOGILEVSKIY	added MYID, renamed MY3PARARRAY
 
 
 ##
 ## setup
 ##
 
-MYUSER=oracle
-MYARRAYT800=3par-t800.dc1.eharmony.com
 BASENAME=`basename $0`
-TMPOUT=/tmp/${BASENAME}.out
-REPOUT=/tmp/${BASENAME}.rep
+MYUSER=oracle
+MY3PARARRAY=$1
+MYID=$2
+TMPOUT=/tmp/${BASENAME}.${MYID}.out
+REPOUT=/tmp/${BASENAME}.${MYID}.rep
 
 
 ##
 ## pars
 ##
 
-maxio=$1  ## MAX IOPs per host
-totio=$2  ## MAX total IOPs
-maxms=$3  ## MAX Service Times in ms per host
-maxql=$4  ## MAX QLEN count per host
-cache=$5  ## GET the data from cache TMPOUT rather than running statvlun
+maxio=$3   ## MAX IOPs per host
+totio=$4   ## MAX total IOPs
+maxms=$5   ## MAX Service Times in ms per host
+maxql=$6   ## MAX QLEN count per host
+cache=$7   ## GET the data from cache TMPOUT rather than running statvlun
 
 
 if [ ${cache}"x" == "x" ]; then
-	ssh $MYUSER@$MYARRAYT800 "statvlun -hostsum -host * -d 5 -sortcol 0 -iter 1" > ${TMPOUT}
+	ssh $MYUSER@$MY3PARARRAY "statvlun -hostsum -host * -d 5 -sortcol 0 -iter 1" > ${TMPOUT}
 fi
 
 do_report=N
@@ -114,9 +115,9 @@ if [ ${do_report} == "Y" ]; then
 	cat ${TMPOUT}
 	if [ ${cache}"x" == "Yx" ]; then
 		echo "------- vlun level stats -------"
-		ssh $MYUSER@$MYARRAYT800 "statvlun -vvsum -d 10 -sortcol 0 -rw -iter 1"
+		ssh $MYUSER@$MY3PARARRAY "statvlun -vvsum -d 10 -sortcol 0 -rw -iter 1"
 		echo "------- disk level stats -------"
-		ssh $MYUSER@$MYARRAYT800 "statpd -d 10 -rw -iter 1"
+		ssh $MYUSER@$MY3PARARRAY "statpd -d 10 -rw -iter 1"
 	fi
 else
 	echo "no-issues-found"
