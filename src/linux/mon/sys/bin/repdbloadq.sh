@@ -9,11 +9,16 @@
 #	Vitaliy Mogilevskiy VMOGILEV
 #
 # Purpose:
-#	Process data upload to REPORTING Server (uses REPDB/DAT/CTL as params)
+#   You can QUEUE up the DAT/CTL pairs to $SHARE_TOP/wrk/${DBNAME} directory
+#   by setting Q flag in $SYS_TOP/conf/repdbload.sh.conf
+#
+#	Then you can use this script to process queued data from $SHARE_TOP/wrk/${DBNAME} directory
+#   and load it to a provided DB connection (CONN param)
 #
 # Usage:
-#	repdbload.sh REPDB DATAFILE SQLLDR_CTL_FILE
-#   reads $SHARE_TOP/wrk/${DBNAME} directory and loads all *dat files using their *ctl files connecting to $CONN
+#	repdbload.sh DBNAME CONN
+#     - reads $SHARE_TOP/wrk/${DBNAME}/*dat directory
+#     - loads all *dat files using their *ctl files connecting to $CONN
 #
 # History:
 #	22-JUL-2014	VMOGILEV	(1.1) Created
