@@ -1,10 +1,11 @@
 #!/bin/ksh
 #
-# $Header chkmon.sh v1.2 VMOGILEV dbatoolz.com
+# $Header chkmon.sh v1.3 VMOGILEV dbatoolz.com
 #
 # v1.0 18-DEC-2008 VMOGILEV created
 # v1.1 16-JAN-2014 VMOGILEV removed $$ from outfile
 # v1.2 25-JUL-2014 VMOGILEV switched to ea_status check to all but 'I' to pick up stale events
+# v1.3 25-JUL-2014 VMOGILEV fixed target formatting
 #
 
 
@@ -117,9 +118,10 @@ outfile=/tmp/$BASENAME.out
 sqlplus -s $UNAMEP@$TARGET <<EOF > $outfile
 alter session set nls_date_format='YYYY-MON-DD HH24:MI';
 
+set lines 132
 set trims on
 col event format a15
-col target format a15
+col target format a35
 
 spool $CURR
 
