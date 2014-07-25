@@ -1,9 +1,10 @@
 #!/bin/ksh
 #
-# $Header chkmon.sh v1.1 VMOGILEV dbatoolz.com
+# $Header chkmon.sh v1.2 VMOGILEV dbatoolz.com
 #
 # v1.0 18-DEC-2008 VMOGILEV created
 # v1.1 16-JAN-2014 VMOGILEV removed $$ from outfile
+# v1.2 25-JUL-2014 VMOGILEV switched to ea_status check to all but 'I' to pick up stale events
 #
 
 
@@ -133,7 +134,8 @@ FROM event_assigments ea
 ,    sids s
 WHERE /*e.e_code_base NOT LIKE '*%'
 AND   */ea.e_id = e.e_id
-AND   ea_status in ('A','B')
+--AND   ea_status in ('A','B')
+AND   ea_status <> ('I') /* all but inactive to pickup stale runs */
 AND   ea_start_time <= SYSDATE-30/24/60
 and   ea.h_id = h.h_id
 and   ea.s_id = s.s_id(+)
