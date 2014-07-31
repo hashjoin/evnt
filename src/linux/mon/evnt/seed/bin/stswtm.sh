@@ -2,7 +2,7 @@
 #
 # File:
 #       stswtm.sh
-# EVNT_REG:	WAIT_TIME SEEDMON 1.8
+# EVNT_REG:	WAIT_TIME SEEDMON 1.9
 # <EVNT_NAME>High Wait Time</EVNT_NAME>
 #
 # Author:
@@ -11,18 +11,18 @@
 # Usage:
 # <EVNT_DESC>
 # Reports sessions with long wait times gives details of the sessions
-# 
+#
 # REPORT ATTRIBUTES:
 # -----------------------------
 # sid
 # event
 # MACHINE
 # nvl(nvl(SQL_ID,PREV_SQL_ID),'null')
-# 
+#
 # PARAMETER       DESCRIPTION                                         EXAMPLE
 # --------------  --------------------------------------------------  -----------
 # TIMETRES        < v$session_wait.seconds_in_wait                    20
-# 
+#
 # APPS_TYPE       Set this parameter if APPS related session details  11i
 #                 are nessesary.  Allowable values are - "11i"
 # </EVNT_DESC>
@@ -38,6 +38,7 @@
 #       VMOGILEV        18-OCT-2013      (v1.6) added lock drills (pulled from drilwait)
 #       VMOGILEV        02-DEC-2013      (v1.7) removed drillocks
 #       VMOGILEV        28-JAN-2014      (v1.8) switched to v$session
+#       VMOGILEV        31-JUL-2014      (v1.9) added module + action
 #
 
 
@@ -60,7 +61,7 @@ set feed off
 set echo off
 set lines 500
 spool $chkfile
-select sid||','||event||','||MACHINE||','||nvl(nvl(SQL_ID,PREV_SQL_ID),'null')
+select sid||','||event||','||MACHINE||','||nvl(rtrim(module||' '||action),'null')||','||nvl(nvl(SQL_ID,PREV_SQL_ID),'null')
 from v\$session
 where wait_time = 0
 and WAIT_CLASS <> 'Idle'
