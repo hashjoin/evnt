@@ -29,20 +29,3 @@ create table event_triggers_sum
 ,   scnt            NUMBER(15) not NULL
 ,   et_phase_status VARCHAR2(1 CHAR) not NULL
 );
-
-
-    SELECT ea_id, count(*) scnt
-    FROM   event_triggers
-    WHERE  et_phase_status = 'P'
-    AND    et_status != 'CLEARED'
-    GROUP BY ea_id) pend
-,    (SELECT ea_id, count(*) scnt
-    FROM   event_triggers
-    WHERE  et_phase_status = 'O'
-    AND    et_status != 'CLEARED'
-    GROUP BY ea_id) old
-,    (SELECT ea_id, count(*) scnt
-    FROM   event_triggers
-    WHERE  et_phase_status = 'C'
-    AND    et_status != 'CLEARED'
-    GROUP BY ea_id
