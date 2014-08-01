@@ -11,6 +11,7 @@ CREATE OR REPLACE PACKAGE BODY evnt_web_pkg AS
 --    2014-Apr-04   v4.8   VMOGILEVSKIY    disp_triggers - added date_triggers_cur to speed up performace
 --    2014-Apr-07   v4.9   VMOGILEVSKIY    disp_triggers - switched to top_sess_triggers_cur (from date_triggers_cur)
 --    2014-Aug-01   v4.10  VMOGILEVSKIY    ea_form - switched to event_triggers_sum
+--    2014-Aug-01   v4.11  VMOGILEVSKIY    ea_form - reversed PEND counts to use event_triggers
 
 
 --
@@ -2768,9 +2769,11 @@ IS
       FROM event_assigments_v ea
       ,    event_parameters ep
       ,    page_lists pl
-      ,    (SELECT ea_id, scnt
-            FROM   event_triggers_sum
-            WHERE  et_phase_status = 'P') pend
+      ,    (ELECT ea_id, count(*) scnt
+            FROM   event_triggers
+            WHERE  et_phase_status = 'P'
+            AND    et_status != 'CLEARED'
+            GROUP BY ea_id) pend
       ,    (SELECT ea_id, scnt
             FROM   event_triggers_sum
             WHERE  et_phase_status = 'O') old
