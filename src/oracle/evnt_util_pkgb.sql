@@ -326,7 +326,7 @@ BEGIN
    END LOOP;
 
    SELECT ep_hold_level, ep_code, cp_code
-   INTO l_ep_holdl, l_ep_code, l_cp_code 
+   INTO l_ep_holdl, l_ep_code, l_cp_code
    FROM (SELECT ep_hold_level
          ,      ep_code
          ,      cp_code
@@ -336,7 +336,7 @@ BEGIN
          AND    e_id =p_e_id
          AND    ep.ep_coll_cp_id = cp.cp_id(+))
    WHERE ROWNUM = 1;
-   
+
    dump_output('export '||g_par_pref||'ep_hold_level='||l_ep_holdl||';');
    dump_output('export '||g_par_pref||'ep_code="'||l_ep_code||'";');
    dump_output('export '||g_par_pref||'cp_code="'||l_cp_code||'";');
@@ -549,11 +549,11 @@ BEGIN
 
    /*
     * get acknowledgement flag for page list;
-    * acknowledgement is only required FOR the first 
+    * acknowledgement is only required FOR the first
     * trigger occurence (p_ET_ORIG_ET_ID IS NULL)
     * see below INSERT ...
     */
-   
+
    SELECT pl_ack_required
    INTO l_ET_ACK_FLAG
    FROM page_lists
@@ -564,14 +564,14 @@ BEGIN
    FROM   dual;
 
    /*
-    * The following rule is used for setting 
+    * The following rule is used for setting
     * notification flag (ET_MAIL_STATUS)
     * ---------------------------------------
     *    ET_MAIL_STATUS='P' (pending)
     *       1) first event trigger (p_ET_ORIG_ET_ID IS NULL)
-    *       
-    *       2) subsequent trigger and acknowledgement is not 
-    *          required (p_ET_ORIG_ET_ID IS NOT NULL AND 
+    *
+    *       2) subsequent trigger and acknowledgement is not
+    *          required (p_ET_ORIG_ET_ID IS NOT NULL AND
     *          l_ET_ACK_FLAG='N')
     *
     *    ET_MAIL_STATUS='X' (suppressed)
@@ -827,7 +827,7 @@ IS
       ||';'|| 'export MAIL_PL_ID='||     et.pl_id
       ||';'|| 'export MAIL_EP_ID='||     ea.ep_id
       ||';'|| 'export MAIL_STATUS="'||   NVL(et_attribute2,et_attribute1)||'-'||DECODE(et_status,'CLEARED',et_status||' '||et_prev_status,et_status)||'"'
-      ||';'|| 'export MAIL_DONE_BY="'||  DECODE(et_status,'CLEARED',et.modified_by,et.created_by)||'"'
+      ||';'|| 'export MAIL_DONE_BY="'||  '$MON_TOP'||substr(et.et_attribute4,instr(et.et_attribute4,'/mon/evnt',-1)+4)||'"'
       ||';'|| 'export MAIL_TRG_TIME="'|| TO_CHAR(et_trigger_time,'MON-DD HH24:MI:SS')||'"'
       ||';'|| 'export MAIL_HOST="'||     et_attribute1||'"'
       ||';'|| 'export MAIL_SID="'||      et_attribute2||'"'
@@ -849,7 +849,7 @@ IS
                                /* only if et_ack_date IS NULL */
                                NULL,DECODE(SIGN(SYSDATE - (et_trigger_time + (p_ack_notif_freq*1/24/60))),
                                        /* and it hasn't been acknowledged
-                                        * for over VALUE(p_ack_notif_freq) 
+                                        * for over VALUE(p_ack_notif_freq)
                                         * minutes
                                         */
                                        1,'YES'
@@ -873,23 +873,23 @@ IS
             OR (et_ack_flag='Y'
                 AND et_ack_date IS NULL
                 AND SYSDATE >= (et_trigger_time + (p_ack_notif_freq*1/24/60))
-                /* 
-                 * this ensures that we don't get paged 
+                /*
+                 * this ensures that we don't get paged
                  * for acknowledgments every time
-                 * mail subsystem is running only once in 
+                 * mail subsystem is running only once in
                  * VALUE(p_ack_notif_freq) minutes
                  */
-                AND SYSDATE >= (SELECT MAX(etn_date) + 
-                                       (p_ack_notif_freq*1/24/60) 
-                                FROM event_trigger_notif sn 
+                AND SYSDATE >= (SELECT MAX(etn_date) +
+                                       (p_ack_notif_freq*1/24/60)
+                                FROM event_trigger_notif sn
                                 WHERE sn.et_id = et.et_id)
                )
             )
       AND   et.ea_id = ea.ea_id
       ORDER BY et_trigger_time;
 
-   CURSOR page_list_cur(p_pl_id      IN NUMBER, 
-                        p_short_file IN VARCHAR2, 
+   CURSOR page_list_cur(p_pl_id      IN NUMBER,
+                        p_short_file IN VARCHAR2,
                         p_long_file  IN VARCHAR2) IS
       SELECT /*+ ORDERED */
               a.a_name
@@ -910,7 +910,7 @@ IS
       AND   pld.pl_id = p_pl_id;
 
    CURSOR sec_page_list_cur(p_a_id IN NUMBER,
-                            p_short_file IN VARCHAR2, 
+                            p_short_file IN VARCHAR2,
                             p_long_file  IN VARCHAR2) IS
       SELECT /*+ RULE */
               a.a_name||'[backup_for('||pa.a_name||')]'
@@ -930,7 +930,7 @@ IS
       AND   ae.a_id = a.a_id
       AND   ab.primary_a_id = pa.a_id
       AND   ab.primary_a_id = p_a_id;
-      
+
    CURSOR pnotif_cnt_cur(p_et_id IN NUMBER,
                          p_a_id IN NUMBER,
                          p_ae_id IN NUMBER) IS
@@ -941,10 +941,10 @@ IS
       AND   ae_id = p_ae_id
       HAVING COUNT(etn_id) >= p_ack_notif_tres;
    pnotif_cnt pnotif_cnt_cur%ROWTYPE;
-      
+
    l_hold_reason  VARCHAR2(100);
    PAGE_SECONDARY BOOLEAN DEFAULT FALSE;
-   
+
 BEGIN
    g_out_ref_id := get_next_ref_id;
 
@@ -985,27 +985,27 @@ BEGIN
             dump_output(page_list.output_line);
          END IF;
 
-         
+
          -- check for SECONDARY emails
          --
          IF peng_trig.sec_flag = 'YES' THEN
             -- check if PRIMARY has been
             -- paged enough times >= p_ack_notif_tres
-            -- 
+            --
             OPEN pnotif_cnt_cur(peng_trig.et_id,
                                 page_list.a_id,
                                 page_list.ae_id);
             FETCH pnotif_cnt_cur INTO pnotif_cnt;
             IF pnotif_cnt_cur%FOUND THEN
                CLOSE pnotif_cnt_cur;
-               PAGE_SECONDARY := TRUE;               
+               PAGE_SECONDARY := TRUE;
             ELSE
                CLOSE pnotif_cnt_cur;
                PAGE_SECONDARY := FALSE;
             END IF;
          END IF;
-         
-         
+
+
          IF PAGE_SECONDARY THEN
             FOR sec_page_list IN sec_page_list_cur(page_list.a_id,
                                                    peng_trig.short_file,
@@ -1017,16 +1017,16 @@ BEGIN
                      p_bl_type => 'A',
                      p_bl_type_id => sec_page_list.a_id,
                      p_bl_reason => l_hold_reason) THEN
-               
+
                   -- hold this mail
                   g_out_ref_type := get_pending_mail_out_code_pgl||'_HOLD' ;
                   dump_output(sec_page_list.output_line||','||l_hold_reason);
-               
+
                ELSIF glob_util_pkg.active_blackout(
                         p_bl_type => 'P',
                         p_bl_type_id => sec_page_list.ae_id,
                         p_bl_reason => l_hold_reason) THEN
-               
+
                   -- hold this mail
                   g_out_ref_type := get_pending_mail_out_code_pgl||'_HOLD' ;
                   dump_output(sec_page_list.output_line||','||l_hold_reason);
@@ -1035,13 +1035,13 @@ BEGIN
                   -- process this mail
                   g_out_ref_type := get_pending_mail_out_code_pgl ;
                   dump_output(sec_page_list.output_line);
-               END IF;            
-            
+               END IF;
+
             -- SECONDARY LOOP
             END LOOP;
          -- PAGE_SECONDARY IF
          END IF;
-         
+
          -- turn the flag OFF
          PAGE_SECONDARY := FALSE;
 
@@ -1137,7 +1137,7 @@ procedure purge_obsolete
 is
 begin
    delete purge_et_id_tmp;
-   
+
    insert into purge_et_id_tmp
    select et.et_id
    from event_triggers et
@@ -1152,7 +1152,7 @@ begin
    delete event_trigger_output x where exists (select 1 from purge_et_id_tmp d where x.et_id = d.et_id);
    delete event_trigger_details x where exists (select 1 from purge_et_id_tmp d where x.et_id = d.et_id);
    delete event_triggers x where exists (select 1 from purge_et_id_tmp d where x.et_id = d.et_id);
-   
+
    delete coll_snap_history where csh_status = 'O';
 
 end purge_obsolete;
@@ -1254,7 +1254,7 @@ PROCEDURE mail_ctrl(
 ,  p_status IN VARCHAR2)
 IS
 BEGIN
-   
+
    -- if trigger type
    -- then just update event_triggers
    --
@@ -1262,7 +1262,7 @@ BEGIN
       UPDATE event_triggers
       SET et_mail_status=UPPER(p_status)
       WHERE et_id = p_et_id;
-   
+
    ELSE
       INSERT INTO event_trigger_notif(
          etn_id
