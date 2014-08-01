@@ -2769,7 +2769,7 @@ IS
       FROM event_assigments_v ea
       ,    event_parameters ep
       ,    page_lists pl
-      ,    (ELECT ea_id, count(*) scnt
+      ,    (SELECT ea_id, count(*) scnt
             FROM   event_triggers
             WHERE  et_phase_status = 'P'
             AND    et_status != 'CLEARED'
