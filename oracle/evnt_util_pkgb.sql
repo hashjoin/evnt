@@ -1128,6 +1128,22 @@ BEGIN
 END ctrl;
 
 
+-- build summary of trigger stats by ea_id
+--
+procedure refresh_event_triggers_sum
+is
+begin
+    delete event_triggers_sum;
+    insert /*+ parallel (t,8)*/
+      into event_triggers_sum t
+    select /*+ parallel (s,8)*/
+           s.ea_id, count(1), s.et_phase_status
+      from event_triggers s
+     where s.et_status != 'CLEARED'
+     group by s.ea_id, s.et_phase_status;
+end refresh_event_triggers_sum;
+
+
 -- new purge procedure
 -- I've gotten really tired of post_coll_purge/post_coll_mark failures
 -- due to dead locks on underlying tables so I collapsed everything here

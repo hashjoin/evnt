@@ -7,7 +7,7 @@ CREATE OR REPLACE PACKAGE evnt_util_pkg AS
 -- SOURCE NAME   : evnt_util_pkgs.sql
 -- DATE CREATED  : 05/17/2002
 -- APPLICATION   : EVENTS
--- VERSION       : 1.2.9
+-- VERSION       : 1.2.10
 -- DESCRIPTION   : Various Utils (see module for the details)
 -- EXAMPLE       :
 -- =====================================================================
@@ -69,12 +69,13 @@ CREATE OR REPLACE PACKAGE evnt_util_pkg AS
 --
 -- 04/15/03  vmogilev    (1.2.6)
 --                       insert_trigger_header - enabled notification
---                          suppressing on subsequent triggers that 
+--                          suppressing on subsequent triggers that
 --                          require acknowledgement
 -- 29/SEP/2009	vmogilev	(1.2.7)
 --				parse_event_assigment - added SC_TNS_ALIAS
 -- 13/DEC/2010	vmogilev	(1.2.9)
 --				purge_obsolete - created
+-- 01/AUG/2014  vmogilev    ((1.2.10)  refresh_event_triggers_sum - created
 -- ---------------------------------------------------------------------
 PROCEDURE mail_ctrl(
    p_et_id  IN NUMBER
@@ -181,6 +182,8 @@ PROCEDURE post_coll_mark(
 ,  p_db_link IN VARCHAR2);
 
 procedure purge_obsolete;
+
+procedure refresh_event_triggers_sum;
 
 END evnt_util_pkg;
 /
