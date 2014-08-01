@@ -10,7 +10,7 @@ CREATE OR REPLACE PACKAGE BODY evnt_web_pkg AS
 --    2014-Apr-02   v4.7   VMOGILEVSKIY    disp_triggers - added e_triggers_cur to speed up performace
 --    2014-Apr-04   v4.8   VMOGILEVSKIY    disp_triggers - added date_triggers_cur to speed up performace
 --    2014-Apr-07   v4.9   VMOGILEVSKIY    disp_triggers - switched to top_sess_triggers_cur (from date_triggers_cur)
-
+--    2014-Aug-01   v4.10  VMOGILEVSKIY    ea_form - switched to event_triggers_sum
 
 
 --
@@ -2768,21 +2768,15 @@ IS
       FROM event_assigments_v ea
       ,    event_parameters ep
       ,    page_lists pl
-      ,    (SELECT ea_id, count(*) scnt
-            FROM   event_triggers
-            WHERE  et_phase_status = 'P'
-            AND    et_status != 'CLEARED'
-            GROUP BY ea_id) pend
-      ,    (SELECT ea_id, count(*) scnt
-            FROM   event_triggers
-            WHERE  et_phase_status = 'O'
-            AND    et_status != 'CLEARED'
-            GROUP BY ea_id) old
-      ,    (SELECT ea_id, count(*) scnt
-            FROM   event_triggers
-            WHERE  et_phase_status = 'C'
-            AND    et_status != 'CLEARED'
-            GROUP BY ea_id) cleared
+      ,    (SELECT ea_id, scnt
+            FROM   event_triggers_sum
+            WHERE  et_phase_status = 'P') pend
+      ,    (SELECT ea_id, scnt
+            FROM   event_triggers_sum
+            WHERE  et_phase_status = 'O') old
+      ,    (SELECT ea_id, scnt
+            FROM   event_triggers_sum
+            WHERE  et_phase_status = 'C') cleared
       WHERE  ea.ep_id = ep.ep_id
       AND    ea.pl_id = pl.pl_id
       AND    ea.ea_id = pend.ea_id(+)
