@@ -94,7 +94,24 @@ begin
       where what like 'evnt_util_pkg.purge_obsolete%';
    exception
       when no_data_found then
+	 -- purge obsolete triggers every 12 hours
          dbms_job.submit(l_job,'evnt_util_pkg.purge_obsolete;',sysdate,'sysdate+(12/24)');
+   end;
+end;
+/
+
+declare
+   l_job binary_integer;
+begin
+   begin
+      select job
+      into l_job
+      from user_jobs
+      where what like 'evnt_util_pkg.refresh_event_triggers_sum%';
+   exception
+      when no_data_found then
+	 -- refresh event_triggers_sum every 5 minutes
+         dbms_job.submit(l_job,'evnt_util_pkg.refresh_event_triggers_sum;',sysdate,'sysdate+(5/(24*60))');
    end;
 end;
 /
