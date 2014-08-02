@@ -12,6 +12,7 @@ CREATE OR REPLACE PACKAGE BODY evnt_web_pkg AS
 --    2014-Apr-07   v4.9   VMOGILEVSKIY    disp_triggers - switched to top_sess_triggers_cur (from date_triggers_cur)
 --    2014-Aug-01   v4.10  VMOGILEVSKIY    ea_form - switched to event_triggers_sum
 --    2014-Aug-01   v4.11  VMOGILEVSKIY    ea_form - reversed PEND counts to use event_triggers
+--    2014-Aug-01   v4.12  VMOGILEVSKIY    get_trig_output - added check for e_print_attr
 
 
 --
@@ -298,27 +299,39 @@ IS
       FROM   event_trigger_output
       WHERE  et_id = p_trig_id
       ORDER BY eto_id;
+
+    l_print_attr events.e_print_attr%type;
+
 BEGIN
-   htp.p('<TABLE  cellpadding=0 cellspacing=0 border=1>');
 
-   IF p_prev_id IS NOT NULL AND
-      p_prev_id != p_trig_id THEN
+   select e_print_attr into l_print_attr
+     from events
+    where e_id = (select e_id from event_triggers where et_id = p_trig_id);
 
-      get_trig_diff(p_trig_id,p_prev_id);
-   END IF;
+   if ( l_print_attr = 'Y' )
+   then
+       htp.p('<TABLE  cellpadding=0 cellspacing=0 border=1>');
 
-   htp.p('<TR>');
-   htp.p('<TD ALIGN="left" bgcolor='||d_PHCS||' height=15 colspan="22"><font color="#000000" size="2" face="Arial">&nbsp;[ALL VALUES] ('||p_trig_id||') Trigger Attributes:</font></TD>');
-   htp.p('</TR>');
-   FOR attributes IN attributes_cur LOOP
-      htp.p('<TR>');
-      htp.p(attributes.output_line);
-      htp.p('</TR>');
-   END LOOP;
+       IF p_prev_id IS NOT NULL AND
+          p_prev_id != p_trig_id THEN
 
-   htp.p('</TABLE>');
+          get_trig_diff(p_trig_id,p_prev_id);
+       END IF;
 
-   htp.p('<BR>');
+       htp.p('<TR>');
+       htp.p('<TD ALIGN="left" bgcolor='||d_PHCS||' height=15 colspan="22"><font color="#000000" size="2" face="Arial">&nbsp;[ALL VALUES] ('||p_trig_id||') Trigger Attributes:</font></TD>');
+       htp.p('</TR>');
+       FOR attributes IN attributes_cur LOOP
+          htp.p('<TR>');
+          htp.p(attributes.output_line);
+          htp.p('</TR>');
+       END LOOP;
+
+       htp.p('</TABLE>');
+
+       htp.p('<BR>');
+   end if;
+
 
    htp.p('<TABLE  cellpadding=0 cellspacing=0 border=1>');
    htp.p('<TR>');
