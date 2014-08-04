@@ -2,7 +2,7 @@
 #
 # File:
 #       dbtopses.sh
-# EVNT_REG:	DB_TOP_SESS SEEDMON 1.12
+# EVNT_REG:	DB_TOP_SESS SEEDMON 1.13
 # <EVNT_NAME>DB Top Sessions</EVNT_NAME>
 #
 # Author:
@@ -46,7 +46,9 @@
 #       VMOGILEV        03/18/2014      v1.10	Increased P1 width
 #       VMOGILEV        07/03/2014      v1.11	Added save to REPDB
 #       VMOGILEV        07/21/2014      v1.12	Fixed null issue on REP Upload
+#       VMOGILEV        08/04/2014      v1.13	added rm -f $chkfile.dat on no data
 #
+
 
 
 chkfile=$1
@@ -420,7 +422,8 @@ fi
 if [ `cat $chkfile.dat | wc -l` -gt 0 ]; then
 	echo "dat file has rows loading to reporting ..."
 else
-	echo "NO dat file -- exiting ..."
+	echo "NO data in .dat file -- exiting ..."
+    rm -f $chkfile.dat
 	exit;
 fi
 
