@@ -827,7 +827,7 @@ IS
       ||';'|| 'export MAIL_PL_ID='||     et.pl_id
       ||';'|| 'export MAIL_EP_ID='||     ea.ep_id
       ||';'|| 'export MAIL_STATUS="'||   NVL(et_attribute2,et_attribute1)||'-'||DECODE(et_status,'CLEARED',et_status||' '||et_prev_status,et_status)||'"'
-      ||';'|| 'export MAIL_DONE_BY="'||  '$MON_TOP'||substr(et.et_attribute4,instr(et.et_attribute4,'/mon/evnt',-1)+4)||'"'
+      ||';'|| 'export MAIL_DONE_BY="'||  '\$MON_TOP'||substr(et.et_attribute4,instr(et.et_attribute4,'/mon/evnt',-1)+4)||'"'
       ||';'|| 'export MAIL_TRG_TIME="'|| TO_CHAR(et_trigger_time,'MON-DD HH24:MI:SS')||'"'
       ||';'|| 'export MAIL_HOST="'||     et_attribute1||'"'
       ||';'|| 'export MAIL_SID="'||      et_attribute2||'"'
