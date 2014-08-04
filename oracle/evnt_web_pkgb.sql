@@ -13,7 +13,8 @@ CREATE OR REPLACE PACKAGE BODY evnt_web_pkg AS
 --    2014-Aug-01   v4.10  VMOGILEVSKIY    ea_form - switched to event_triggers_sum
 --    2014-Aug-01   v4.11  VMOGILEVSKIY    ea_form - reversed PEND counts to use event_triggers
 --    2014-Aug-01   v4.12  VMOGILEVSKIY    get_trig_output - added check for e_print_attr
---    2014-Aug-01   v4.13  VMOGILEVSKIY    ea_form - switched to using EVENT_TRIGGERS_FBI01 index for max ET_ID lookups
+--    2014-Aug-04   v4.13  VMOGILEVSKIY    ea_form - switched to using EVENT_TRIGGERS_FBI01 index for max ET_ID lookups
+--    2014-Aug-04   v4.14  VMOGILEVSKIY    ea_form - ditto in the main cursor for counts
 
 
 --
@@ -2785,7 +2786,8 @@ IS
       ,    page_lists pl
       ,    (SELECT ea_id, count(*) scnt
             FROM   event_triggers
-            WHERE  et_phase_status = 'P'
+            WHERE  /* decode is going after EVENT_TRIGGERS_FBI01 index */
+                   decode(et_phase_status,'P','P',null) = 'P'
             AND    et_status != 'CLEARED'
             GROUP BY ea_id) pend
       ,    (SELECT ea_id, scnt
@@ -3048,6 +3050,10 @@ BEGIN
          -- @HERE
          if ( assigments.pend_cnt > 0 )
          then
+            -- NOTE:
+            --   going after EVENT_TRIGGERS_FBI01 using:
+            --   decode(et_phase_status,'P','P',null)
+            --
             select max(et_id)
               into l_pend_et_id
               from event_triggers
