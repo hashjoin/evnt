@@ -5,7 +5,7 @@ CREATE OR REPLACE PACKAGE BODY web_nav_pkg AS
   d_PHCM web_attributes.wb_val%TYPE :=  web_std_pkg.gattr('PHCM'); /* Page Header Main Color */
   d_PHCS web_attributes.wb_val%TYPE :=  web_std_pkg.gattr('PHCS'); /* Page Header Sub Color  */
   d_PHMA web_attributes.wb_val%TYPE :=  web_std_pkg.gattr('PHMA'); /* Page Header Menu Color ACTIVE  */
-  
+
 /* private proc */
 PROCEDURE nav(
    p_location IN VARCHAR2)
@@ -17,7 +17,7 @@ BEGIN
          FROM web_menus
          WHERE wm_code = p_location)
    WHERE ROWNUM = 1;
-   
+
    web_std_pkg.header(
       p_message  => l_mdesc
    ,  p_location => p_location
@@ -30,7 +30,7 @@ IS
    l_num INTEGER;
 BEGIN
    nav('MAIN');
-   
+
    htp.p('<h3><center>At A Glance</center></h3>');
    htp.p('<ul>');
 
@@ -38,7 +38,7 @@ BEGIN
    SELECT cnt INTO l_num
    FROM (select count(*) cnt
          from event_assigments);
-         
+
    htp.p('<li><font class="TRT">found <b>'||l_num||'</b> event assigments</font></li>');
 
    htp.p('<ul>');
@@ -51,17 +51,17 @@ BEGIN
                           'l','scheduled (local agent)',
                           'r','scheduled (remote agent)') typ
                    ,   count(*) cnt
-                   from event_assigments 
+                   from event_assigments
                    group by ea_status
                    union all
-                   select 
+                   select
                       'behind schedule' typ
                    ,   count(*) cnt
                    from event_assigments
                    where ea_status = 'A'
                    and SYSDATE >= ea_start_time+2/24/60
                    union all
-                   select 
+                   select
                       'stale [running > 15 min]' typ
                    ,   count(*) cnt
                    from event_assigments
@@ -71,8 +71,8 @@ BEGIN
          htp.p('<li><font class="TRT"><b>'||asts.cnt||'</b> <i>'||asts.typ||'</i></font></li>');
       END LOOP;
    htp.p('</ul>');
-   
-   
+
+
    FOR atim IN (select min(decode(ea_last_runtime_sec,
                               0,1,ea_last_runtime_sec)) tim
                 ,      'fastest' typ
@@ -92,22 +92,22 @@ BEGIN
    LOOP
       htp.p('<li><font class="TRT">the <b><i>'||atim.typ||'</i></b> processing time was <b>'||atim.tim||' sec</b></font></li>');
    END LOOP;
-   
+
    SELECT cnt INTO l_num
    FROM (select count(*) cnt
          from event_triggers
-         where et_phase_status='P');
-   
+         where decode(et_phase_status,'P','P',null)='P');
+
    htp.p('<li><font class="TRT">there are <b>'||l_num||' <i>pending event triggers </i></b>...</font></li>');
 
    SELECT cnt INTO l_num
    FROM (select count(*) cnt
          from event_triggers
          where TRUNC(et_trigger_time)=TRUNC(SYSDATE));
-   
+
    htp.p('<li><font class="TRT"><b>'||l_num||' <i>event triggers </i></b> were created today</font></li>');
-   
-   
+
+
    FOR hist IN (select to_char(min(et_trigger_time),'RRRR-MON-DD HH24:MI:SS') tim
                 ,      'oldest' typ
                 from event_triggers
@@ -118,14 +118,14 @@ BEGIN
    LOOP
       htp.p('<li><font class="TRT">the <b><i>'||hist.typ||'</i></b> event trigger was created on <b>'||hist.tim||'</b></font></li>');
    END LOOP;
-                
 
 
-   htp.p('</ul>');   
+
+   htp.p('</ul>');
    web_std_pkg.footer;
 END evnt;
 
-      
+
 PROCEDURE coll
 IS
 BEGIN
