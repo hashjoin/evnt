@@ -1,6 +1,6 @@
 #!/bin/ksh
 #
-# $Header bgman.sh 05/08/2006 1.5
+# $Header bgman.sh 05/08/2006 1.6
 #
 # File:
 #	bgman.sh
@@ -22,6 +22,7 @@
 #	03-APR-2003	VMOGILEV	(1.3) transitioned to bgproc.sh
 #	27-APR-2006	VMOGILEV	(1.4) increased sleep from 1 sec to 5 sec
 #	08-MAY-2006	VMOGILEV	(1.5) deincreased sleep from 5 sec to 2 sec
+#	04-AUG-2006	VMOGILEV	(1.6) deincreased sleep from .5 sec to .2 sec
 #
 
 if [ $# -lt 3 ]; then
@@ -77,7 +78,7 @@ do
 	
 	echo `date` " SUBMITTING:	SUBID_ID=$subid "
 	$SYS_TOP/bin/bgproc.sh $subid $sublist_type >> $logfile.$subid 2>&1 &
-	sleep .5
+	sleep .2
 done
 }
 
