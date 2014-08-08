@@ -15,7 +15,7 @@ CREATE OR REPLACE PACKAGE BODY evnt_web_pkg AS
 --    2014-Aug-01   v4.12  VMOGILEVSKIY    get_trig_output - added check for e_print_attr
 --    2014-Aug-04   v4.13  VMOGILEVSKIY    ea_form - switched to using EVENT_TRIGGERS_FBI01 index for max ET_ID lookups
 --    2014-Aug-04   v4.14  VMOGILEVSKIY    ea_form - ditto in the main cursor for counts
-
+--    2014-Aug-08   v4.15  VMOGILEVSKIY    get_trigger - changed "compare with" functionality to "History of Event"
 
 --
 /* GLOBAL FORMATING */
@@ -1380,7 +1380,7 @@ BEGIN
          --
          htp.p('<TABLE  border="2" cellspacing=0 cellpadding=2 BGCOLOR="'||d_TRC||'">');
          htp.p('<TR>');
-         htp.p('<TH colspan=5 ALIGN="Center" BGCOLOR="'||d_THC||'"><font class="THT">Pick any trigger below to compare with ['||trig_det.et_id||']</font></TH>');
+         htp.p('<TH colspan=5 ALIGN="Center" BGCOLOR="'||d_THC||'"><font class="THT">History of Event</font></TH>');
          htp.p('</TR>');
          htp.p('<TH ALIGN="Left" BGCOLOR="'||d_THC||'"><font class="THT">Target</font></TH>');
          htp.p('<TH ALIGN="Left" BGCOLOR="'||d_THC||'"><font class="THT">Date</font></TH>');
@@ -1414,7 +1414,7 @@ BEGIN
 
             htp.p('<TD nowrap><font class="TRT">'||prevs.target||'</font></TD>');
             htp.p('<TD nowrap><font class="TRT">'||prevs.trigger_time||'</font></TD>');
-            htp.p('<TD nowrap><a href="evnt_web_pkg.get_trigger?p_et_id='||trig_det.et_id||'&p_diff_with='||prevs.et_id||'"><font class="TRL">'||prevs.et_id||'</font></a></TD>');
+            htp.p('<TD nowrap><a href="evnt_web_pkg.get_trigger?p_et_id='||prevs.et_id||'"><font class="TRL">'||prevs.et_id||'</font></a></TD>');
             htp.p('<TD nowrap><font class="TRT">'||prevs.et_status||'</font></TD>');
             htp.p('<TD nowrap><font class="TRT">'||prevs.ep_desc||'</font></TD>');
             htp.p('</TR>');
