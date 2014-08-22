@@ -2,7 +2,7 @@
 #
 # File:
 #       dglagck.sh
-# EVNT_REG:	CHK_DGARD_LAG SEEDMON 1.2
+# EVNT_REG:	CHK_DGARD_LAG SEEDMON 1.3
 # <EVNT_NAME>Data Guard Lag</EVNT_NAME>
 #
 # Author:
@@ -11,11 +11,11 @@
 # Usage:
 # <EVNT_DESC>
 # Checks dataguard lag
-# 
+#
 # REPORT ATTRIBUTES:
 # -----------------------------
 # lag in minutes
-# 
+#
 # PARAMETER       DESCRIPTION
 # --------------  ----------------------------------------------------------
 # LAG_MINUTES     Threshold for LAG in minutes
@@ -25,6 +25,7 @@
 # History:
 #       VMOGILEV        04-MAR-2014      v1.1	Created
 #       VMOGILEV        02-APR-2014      v1.2	Added NVL on max(time) to capture recovery_stopped by user
+#       VMOGILEV        02-APR-2014      v1.3	Added process,status,THREAD#,SEQUENCE# to the query
 #
 
 
@@ -47,7 +48,7 @@ set trims on
 col MESSAGE format a100 trunc
 select * from v\\\$dataguard_status order by TIMESTAMP;
 set lines 80
-select process, status from v\\\$managed_standby;
+select process,status,THREAD#,SEQUENCE# from v\\\$managed_standby where STATUS<>'IDLE';
 exit
 XXX
 " > /tmp/${MON__EA_ID}.run
