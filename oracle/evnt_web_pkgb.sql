@@ -18,8 +18,9 @@ CREATE OR REPLACE PACKAGE BODY evnt_web_pkg AS
 --    2014-Aug-04   v4.14  VMOGILEVSKIY    ea_form - ditto in the main cursor for counts
 --    2014-Aug-08   v4.15  VMOGILEVSKIY    get_trigger - changed "compare with" functionality to "History of Event"
 --    2014-Nov-23   v4.16  VMOGILEVSKIY    disp_triggers - added p_e_id to pend_triggers_cur
-
+--    2014-Nov-23   v4.17  VMOGILEVSKIY    history - added PEND counts to week_cur - HEAVY REVORK -- see evnt/src/oracle/hist* for example/test!
 --
+
 /* GLOBAL FORMATING */
    d_THC  web_attributes.wb_val%TYPE :=  web_std_pkg.gattr('THC');  /* Table Header Color     */
    d_TRC  web_attributes.wb_val%TYPE :=  web_std_pkg.gattr('TRC');  /* Table Row Color        */
@@ -586,6 +587,7 @@ IS
              group by et_id) d
       WHERE et.et_pending = 'P'
       and   et.e_id = decode(p_e_id,'x',e_id,p_e_id)
+      and   et.ep_id = decode(p_ep_id,'x',ep_id,p_ep_id)
       AND   et.et_ack_by_a_id = a.a_id(+)
       and   et.et_id = d.et_id(+)
       ORDER BY et_trigger_time desc, et.et_id desc;
@@ -1489,6 +1491,7 @@ IS
       SELECT
           'p_e_id='||e_id e_id
       ,   NVL(e_name,e_code) e_code
+      ,   MAX(DECODE(day,'PEND',cnt,NULL)) PEND
       ,   MAX(DECODE(day,'MON',cnt,NULL)) MON
       ,   MAX(DECODE(day,'TUE',cnt,NULL)) TUE
       ,   MAX(DECODE(day,'WED',cnt,NULL)) WED
@@ -1501,19 +1504,20 @@ IS
          e.e_id
       ,  e.e_code
       ,  e.e_name
-      ,  TO_CHAR(et.et_trigger_time,'DY') day
+      ,  decode(et.trig_type,'ALL',TO_CHAR(et.et_trigger_time,'DY'),'PEND') day
       ,  COUNT(*) cnt
-      FROM event_triggers et
-      ,    events e
-      WHERE et.e_id = e.e_id
+      FROM events e
+      ,    (select 'ALL' trig_type, e.* from event_triggers e where TRUNC(e.et_trigger_time,'IW') = TRUNC(p_week,'IW')
+            union all
+            select 'PEND' trig_type, e.* from event_triggers e where decode(et_phase_status,'P','P',null) = 'P') et
+      WHERE e.e_id = et.e_id
       and e.e_code != 'SQL_SCRIPT'
       and e.e_code != 'CHK_OS_LOG'
-      AND TRUNC(et.et_trigger_time,'IW') = TRUNC(p_week,'IW')
       GROUP BY
          e.e_id
       ,  e.e_code
       ,  e.e_name
-      ,  TO_CHAR(et.et_trigger_time,'DY'))
+      ,  decode(et.trig_type,'ALL',TO_CHAR(et.et_trigger_time,'DY'),'PEND'))
       GROUP BY
           e_id
       ,   NVL(e_name,e_code)
@@ -1521,6 +1525,7 @@ IS
       SELECT
           'p_ep_id='||ep_id e_id
       ,   NVL(ep_desc,ep_code) e_code
+      ,   MAX(DECODE(day,'PEND',cnt,NULL)) PEND
       ,   MAX(DECODE(day,'MON',cnt,NULL)) MON
       ,   MAX(DECODE(day,'TUE',cnt,NULL)) TUE
       ,   MAX(DECODE(day,'WED',cnt,NULL)) WED
@@ -1530,27 +1535,22 @@ IS
       ,   MAX(DECODE(day,'SUN',cnt,NULL)) SUN
       FROM (
       SELECT /*+ ORDERED */
-         ep.ep_id
-      ,  ep.ep_code
-      ,  ep.ep_desc
-      ,  TO_CHAR(et.et_trigger_time,'DY') day
+         et.ep_id
+      ,  et.ep_code
+      ,  et.ep_desc
+      ,  decode(et.trig_type,'ALL',TO_CHAR(et.et_trigger_time,'DY'),'PEND') day
       ,  COUNT(*) cnt
-      FROM event_triggers et
-      ,    events e
-      ,    event_parameters ep
-      ,    event_assigments ea
-      WHERE et.e_id = e.e_id
-      and et.ea_id = ea.ea_id
-      and ea.ep_id = ep.ep_id
-      and ea.e_id = e.e_id
-      and e.e_id = ep.e_id
+      FROM events e
+      ,    (select 'ALL' trig_type, e.* from event_triggers_all_v e where TRUNC(e.et_trigger_time,'IW') = TRUNC(p_week,'IW')
+            union all
+            select 'PEND' trig_type, e.* from event_triggers_all_v e where et_pending = 'P') et
+      WHERE e.e_id = et.e_id
       and e.e_code in ('SQL_SCRIPT', 'CHK_OS_LOG')
-      AND TRUNC(et.et_trigger_time,'IW') = TRUNC(p_week,'IW')
       GROUP BY
-         ep.ep_id
-      ,  ep.ep_code
-      ,  ep.ep_desc
-      ,  TO_CHAR(et.et_trigger_time,'DY'))
+         et.ep_id
+      ,  et.ep_code
+      ,  et.ep_desc
+      ,  decode(et.trig_type,'ALL',TO_CHAR(et.et_trigger_time,'DY'),'PEND'))
       GROUP BY
           ep_id
       ,   NVL(ep_desc,ep_code)
@@ -1634,6 +1634,7 @@ BEGIN
 
    htp.p('<TABLE  border="2" cellspacing=0 cellpadding=2 BGCOLOR="'||d_TRC||'">');
    htp.p('<TH ALIGN="Left" BGCOLOR="'||d_THC||'"><font class="THT">Event</font></TH>');
+   htp.p('<TH ALIGN="Left" BGCOLOR="'||d_THC||'"><font class="THT">TOTAL<br>PENDING</font></TH>');
    htp.p('<TH ALIGN="Left" BGCOLOR="'||d_THC||'"><font class="THT">MON<br>'||TO_CHAR(TRUNC(l_week,'IW')+0,'MON-DD')||'</font></TH>');
    htp.p('<TH ALIGN="Left" BGCOLOR="'||d_THC||'"><font class="THT">TUE<br>'||TO_CHAR(TRUNC(l_week,'IW')+1,'MON-DD')||'</font></TH>');
    htp.p('<TH ALIGN="Left" BGCOLOR="'||d_THC||'"><font class="THT">WED<br>'||TO_CHAR(TRUNC(l_week,'IW')+2,'MON-DD')||'</font></TH>');
@@ -1646,6 +1647,9 @@ BEGIN
 
       htp.p('<TR>');
       htp.p('<TD nowrap><font class="TRT">'||week.e_code||'</font></TD>');
+      htp.p('<TD nowrap><a href="evnt_web_pkg.disp_triggers?'||week.e_id||'&p_phase=P'||
+                                      '"><font class="TRL">'||
+                                      week.PEND||'</font></a></TD>');
       htp.p('<TD nowrap><a href="evnt_web_pkg.disp_triggers?'||week.e_id||
                                       '&p_date='||TO_CHAR(TRUNC(l_week,'IW')+0,'RRRR-MON-DD')||
                                       '"><font class="TRL">'||
