@@ -1,6 +1,7 @@
 set scan off
 
 CREATE OR REPLACE PACKAGE BODY evnt_web_pkg AS
+-- $Id$
 --    2013-Nov-27   v4.1   VMOGILEVSKIY    Removed CID, PID, OID added CNT
 --    2013-Nov-30   v4.2   VMOGILEVSKIY    Removed TID - moved the link to "Status" column
 --    2013-Nov-30   v4.3   VMOGILEVSKIY    Changed PND link to go directly to trigger view
@@ -16,6 +17,7 @@ CREATE OR REPLACE PACKAGE BODY evnt_web_pkg AS
 --    2014-Aug-04   v4.13  VMOGILEVSKIY    ea_form - switched to using EVENT_TRIGGERS_FBI01 index for max ET_ID lookups
 --    2014-Aug-04   v4.14  VMOGILEVSKIY    ea_form - ditto in the main cursor for counts
 --    2014-Aug-08   v4.15  VMOGILEVSKIY    get_trigger - changed "compare with" functionality to "History of Event"
+--    2014-Nov-23   v4.16  VMOGILEVSKIY    disp_triggers - added p_e_id to pend_triggers_cur
 
 --
 /* GLOBAL FORMATING */
@@ -582,7 +584,8 @@ IS
       ,    (select count(*) attr_cnt, et_id
               from event_trigger_details
              group by et_id) d
-      WHERE et_pending = 'P'
+      WHERE et.et_pending = 'P'
+      and   et.e_id = decode(p_e_id,'x',e_id,p_e_id)
       AND   et.et_ack_by_a_id = a.a_id(+)
       and   et.et_id = d.et_id(+)
       ORDER BY et_trigger_time desc, et.et_id desc;
