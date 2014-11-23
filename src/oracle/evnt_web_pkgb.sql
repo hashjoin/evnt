@@ -19,7 +19,11 @@ CREATE OR REPLACE PACKAGE BODY evnt_web_pkg AS
 --    2014-Aug-08   v4.15  VMOGILEVSKIY    get_trigger - changed "compare with" functionality to "History of Event"
 --    2014-Nov-23   v4.16  VMOGILEVSKIY    disp_triggers - added p_e_id to pend_triggers_cur
 --    2014-Nov-23   v4.17  VMOGILEVSKIY    history - added PEND counts to week_cur - HEAVY REVORK -- see evnt/src/oracle/hist* for example/test!
+--    2014-Nov-23   v4.18  VMOGILEVSKIY    ep_form - added p_phase=P to triggers ilnk
+--    2014-Nov-23   v4.19  VMOGILEVSKIY    history - added e_link to link to Event Parameter/Events
 --
+
+
 
 /* GLOBAL FORMATING */
    d_THC  web_attributes.wb_val%TYPE :=  web_std_pkg.gattr('THC');  /* Table Header Color     */
@@ -1484,12 +1488,14 @@ BEGIN
 END get_trigger;
 
 
+
 PROCEDURE history(
    p_week IN VARCHAR2 DEFAULT NULL)
 IS
    CURSOR week_cur(p_week IN DATE) IS
       SELECT
           'p_e_id='||e_id e_id
+      ,   'ep_form?p_e_id='||e_id||'&p_operation=DETAIL' e_link
       ,   NVL(e_name,e_code) e_code
       ,   MAX(DECODE(day,'PEND',cnt,NULL)) PEND
       ,   MAX(DECODE(day,'MON',cnt,NULL)) MON
@@ -1524,6 +1530,7 @@ IS
       union all
       SELECT
           'p_ep_id='||ep_id e_id
+      ,   'epv_form?p_ep_id='||ep_id||'&p_e_id='||e_id e_link
       ,   NVL(ep_desc,ep_code) e_code
       ,   MAX(DECODE(day,'PEND',cnt,NULL)) PEND
       ,   MAX(DECODE(day,'MON',cnt,NULL)) MON
@@ -1535,7 +1542,8 @@ IS
       ,   MAX(DECODE(day,'SUN',cnt,NULL)) SUN
       FROM (
       SELECT /*+ ORDERED */
-         et.ep_id
+         e.e_id
+      ,  et.ep_id
       ,  et.ep_code
       ,  et.ep_desc
       ,  decode(et.trig_type,'ALL',TO_CHAR(et.et_trigger_time,'DY'),'PEND') day
@@ -1547,14 +1555,16 @@ IS
       WHERE e.e_id = et.e_id
       and e.e_code in ('SQL_SCRIPT', 'CHK_OS_LOG')
       GROUP BY
-         et.ep_id
+         e.e_id
+      ,  et.ep_id
       ,  et.ep_code
       ,  et.ep_desc
       ,  decode(et.trig_type,'ALL',TO_CHAR(et.et_trigger_time,'DY'),'PEND'))
       GROUP BY
-          ep_id
+          e_id
+      ,   ep_id
       ,   NVL(ep_desc,ep_code)
-      ORDER BY 2;
+      ORDER BY 3;
 
 
 --      SELECT
@@ -1646,7 +1656,8 @@ BEGIN
    FOR week IN week_cur(l_week) LOOP
 
       htp.p('<TR>');
-      htp.p('<TD nowrap><font class="TRT">'||week.e_code||'</font></TD>');
+--      htp.p('<TD nowrap><font class="TRT">'||week.e_code||'</font></TD>');
+      htp.p('<TD nowrap><a href="evnt_web_pkg.'||week.e_link||'"><font class="TRL">'||week.e_code||'</font></a></TD>');
       htp.p('<TD nowrap><a href="evnt_web_pkg.disp_triggers?'||week.e_id||'&p_phase=P'||
                                       '"><font class="TRL">'||
                                       week.PEND||'</font></a></TD>');
@@ -1961,7 +1972,7 @@ BEGIN
              'del</font></a>'||
          '<font class="TRT">|</font>'||
          /* TRIGGERS */
-         '<a href="evnt_web_pkg.disp_triggers?p_ep_id='||ep_all.ep_id||'">'||
+         '<a href="evnt_web_pkg.disp_triggers?p_phase=P&p_ep_id='||ep_all.ep_id||'">'||
              '<font class="TRL">'||
              'triggers</font></a>'||
          /* END */
