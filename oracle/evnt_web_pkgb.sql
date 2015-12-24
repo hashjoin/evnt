@@ -1,7 +1,7 @@
 set scan off
 
 CREATE OR REPLACE PACKAGE BODY evnt_web_pkg AS
--- $Id$
+-- $Id: evnt_web_pkgb.sql 54 2014-11-23 23:52:57Z vmogilevskiy $
 --    2013-Nov-27   v4.1   VMOGILEVSKIY    Removed CID, PID, OID added CNT
 --    2013-Nov-30   v4.2   VMOGILEVSKIY    Removed TID - moved the link to "Status" column
 --    2013-Nov-30   v4.3   VMOGILEVSKIY    Changed PND link to go directly to trigger view

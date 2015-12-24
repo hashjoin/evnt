@@ -1,6 +1,6 @@
 /*
 
-$Id$
+$Id: evnt_clnsid.sql 58 2014-11-24 02:53:26Z vmogilevskiy $
 
     1 = host copy from
     2 = host copy to

@@ -1,4 +1,4 @@
--- $Id$
+-- $Id: cr8musr_11g.sql 57 2014-11-24 02:13:07Z vmogilevskiy $
 --
 
 CREATE USER MON IDENTIFIED BY justagate
