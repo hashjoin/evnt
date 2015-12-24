@@ -30,7 +30,7 @@
 #			[default=7000]
 # HOST_DOMAIN     Domain Name to Filter out from hostname
 #                 for purly cosmetic reasons to shorten the
-#                 column of the report                        .eharmony.com
+#                 column of the report                        .mydomain.com
 # </EVNT_DESC>
 #
 #

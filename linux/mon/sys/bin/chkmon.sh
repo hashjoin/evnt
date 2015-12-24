@@ -27,9 +27,9 @@ export ORACLE_SID=EVNT1
 
 
 UNAMEP=evnt/evnt
-DBA="VitaliyMogilevskiy@eharmony.com"
-SYSADMIN="VitaliyMogilevskiy@eharmony.com"
-ENV_FILE=/oracle/orabin/admin/scripts/mon/MON.env
+DBA="VitaliyMogilevskiy@domain.com"
+SYSADMIN="VitaliyMogilevskiy@domain.com"
+ENV_FILE=~/admin/scripts/mon/MON.env
 
 ##
 ## --- end user config vars ---

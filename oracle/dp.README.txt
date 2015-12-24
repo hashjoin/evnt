@@ -4,23 +4,23 @@
   Allow from all
   AllowOverride None
   PlsqlDatabaseUsername         evexternal
-  PlsqlDatabasePassword         privetev13
-  PlsqlDatabaseConnectString    dblogger.lls.edu:1521:10GR2 SIDFormat
+  PlsqlDatabasePassword         supersecret
+  PlsqlDatabaseConnectString    dblogger.domain.com:1521:10GR2 SIDFormat
   PlsqlAuthenticationMode       Basic
   PlsqlNLSLanguage              American_America.WE8ISO8859P1
 </Location>
 
 sqlplus / as sysdba <<EOF
-create user evexternal identified by privetev13;
+create user evexternal identified by supersecret;
 grant create session to evexternal;
 grant execute on evnt.dp to evexternal;
 grant create synonym to evexternal;
-conn evexternal/privetev13
+conn evexternal/supersecret
 create synonym dp for evnt.dp;
 exit
 EOF
 
 ## now you can lookup triggers and share them externally without password:
 ##
-https://mondb1.dc1.eharmony.com:4443/evntext/dp?tid=262722
+https://mondb1.domain.com:4443/evntext/dp?tid=262722
 
